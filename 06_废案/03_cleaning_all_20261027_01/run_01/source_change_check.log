@@ -1,0 +1,70 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/source_change_check.log
+  log type:  text
+ opened on:  27 Oct 2026, 22:47:49
+
+. local raw "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/06_balance_sheet/FS_Combas.dta"
+
+. use "`raw'", clear
+(CSMAR)
+
+. describe
+
+Contains data from /Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/06_balance_sheet/FS_Combas.dta
+ Observations:       182,596                  CSMAR
+    Variables:             9                  27 Oct 2026 22:26
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Stkcd           str6    %-9s                  [证券代码]-以沪、深、北证券交易所公布的证券代码为准。
+ShortName       str13   %-9s                  [证券简称]-以沪、深、北证券交易所公布的证券简称为准。
+Accper          str10   %-9s                  [统计截止日期]-YYYY-MM-DD，前四位表示会计报表公布年度
+Typrep          str1    %-9s                  [报表类型]-指上市公司的财务报表中反映的是合并报表或者母公司报表。“A＝合并报表”、“B＝母公司报表”。
+A001101000      double  %10.0g                [货币资金]-公司库存现金、银行结算户存款、外埠存款、银行汇票存款、银行本票存款、信用卡存款、信用证保证金存款等的合计数。1990年起使用
+A001000000      double  %10.0g                [资产总计]-资产各项目之总计。1990年起使用
+A002101000      double  %10.0g                [短期借款]-公司借入的尚未归还的的一年期以下(含一年)的借款。
+check_year      str4    %9s                   
+check_md        str5    %9s                   
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Sorted by: 
+
+. count
+  182,596
+
+. local ncurrent=_N
+
+. assert check_year==substr(Accper,1,4)
+
+. assert check_md==substr(Accper,6,5)
+
+. use "run_01/balance_annual.dta", clear
+(CSMAR)
+
+. append using "run_01/balance_other_records.dta"
+
+. sort source_row
+
+. assert source_row==_n
+
+. assert _N==`ncurrent'
+
+. cf Stkcd ShortName Accper Typrep A001101000 A001000000 A002101000 using "`raw'", all
+           Stkcd: match
+       ShortName: match
+          Accper: match
+          Typrep: match
+      A001101000: match
+      A001000000: match
+      A002101000: match
+
+. display "ORIGINAL_SEVEN_FIELDS_UNCHANGED_ADDITIONAL_CHECK_FIELDS_CONFIRMED"
+ORIGINAL_SEVEN_FIELDS_UNCHANGED_ADDITIONAL_CHECK_FIELDS_CONFIRMED
+
+. log close
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/source_change_check.log
+  log type:  text
+ closed on:  27 Oct 2026, 22:47:50
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,16 @@
+metric,value
+raw_rows,182596
+excluded_nonannual_or_outside_window,144674
+annual_rows,37922
+duplicate_company_year_surplus,0
+annual_companies,4218
+flag_cash_missing,98
+flag_assets_missing,0
+flag_loan_missing,2857
+flag_cash_negative,0
+flag_assets_nonpositive,3
+flag_loan_negative,0
+flag_cash_gt_assets,0
+flag_loan_gt_assets,88
+any_quality_flag,2949
+annual_rows_2007_2018_before_other_filters,32240

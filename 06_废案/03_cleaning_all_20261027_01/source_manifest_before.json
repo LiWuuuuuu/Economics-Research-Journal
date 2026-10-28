@@ -1,0 +1,128 @@
+[
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/010_fin_audit/FIN_Audit.dta",
+    "relative": "01_raw/010_fin_audit/FIN_Audit.dta",
+    "size": 12600099,
+    "sha256": "7a2892e682d9ce82a950e9daf1b2d18298bab2be6754484954fbcfbc59c72748"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/01_weekly_market/TRD_Weekm.dta",
+    "relative": "01_raw/01_weekly_market/TRD_Weekm.dta",
+    "size": 136789,
+    "sha256": "9ab62cae009e8e9bb550c6c6ea3b270d5a5048971581356f2259e40020a3093e"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/02_weekly_stock/TRD_Week.dta",
+    "relative": "01_raw/02_weekly_stock/TRD_Week.dta",
+    "size": 47004400,
+    "sha256": "a9a554ad001f47324e627472f0c5ecff335a00f601aad8ac00d56b70bd9d00f3"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/02_weekly_stock/TRD_Week1.dta",
+    "relative": "01_raw/02_weekly_stock/TRD_Week1.dta",
+    "size": 32985569,
+    "sha256": "c9e82dddb0d456047dcbee7b0eaa56dc24303221a874386ac1c7a2ba74a5c918"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(2).dta",
+    "relative": "01_raw/03_daily_trading/TRD_Dalyr(2).dta",
+    "size": 56005040,
+    "sha256": "94384a428a290c6a980b6fe9882f2a4d12f85db04f1bf340aac2dd5abb2a8eb7"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(4).dta",
+    "relative": "01_raw/03_daily_trading/TRD_Dalyr(4).dta",
+    "size": 56005040,
+    "sha256": "c6b0d2aecfa5046c5be47df7ac0e54ec53c529b7658d178fb2f0467ca45abd4c"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(5).dta",
+    "relative": "01_raw/03_daily_trading/TRD_Dalyr(5).dta",
+    "size": 56005040,
+    "sha256": "be64623ef5588986a211b2ce04410e20fc2a7856c95cd9c94067c0f2a08709de"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1(2).dta",
+    "relative": "01_raw/03_daily_trading/TRD_Dalyr1(2).dta",
+    "size": 56005040,
+    "sha256": "17546974725b61d16f76645802e816cb8934cddcfaada29042d7db9b53d7338c"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1(3).dta",
+    "relative": "01_raw/03_daily_trading/TRD_Dalyr1(3).dta",
+    "size": 56005040,
+    "sha256": "f59514012ea50628a524f0373bfff4b621c786b880bc9163d3fce1c7d4e3ca1e"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1.dta",
+    "relative": "01_raw/03_daily_trading/TRD_Dalyr1.dta",
+    "size": 50766128,
+    "sha256": "2e67b35e7b5b826d5cb803be3696c682c6933a2b84bc480410eae7b0bfab2cc0"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2(1).dta",
+    "relative": "01_raw/03_daily_trading/TRD_Dalyr2(1).dta",
+    "size": 56005040,
+    "sha256": "dcd0c589d0031625cdfefaacd6619b6731f1582727888f4755db86bb2669b4ab"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2.dta",
+    "relative": "01_raw/03_daily_trading/TRD_Dalyr2.dta",
+    "size": 50398600,
+    "sha256": "e887cc6b1402a613c0f5c01467f9bf00339a3f21035d1ed288b56099c4422fb0"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr3.dta",
+    "relative": "01_raw/03_daily_trading/TRD_Dalyr3.dta",
+    "size": 9946440,
+    "sha256": "bfb80b933f61992d64b9fa6b7bcaafee2adbf672e78b5718c4cda075cb3983d1"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/04_share_capital/TRD_Capchg.dta",
+    "relative": "01_raw/04_share_capital/TRD_Capchg.dta",
+    "size": 2661729,
+    "sha256": "e9dd20d77b319f79e72c59aacb60440513373158629d786167e56683b3bfb360"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/05_company_info/TRD_Co.dta",
+    "relative": "01_raw/05_company_info/TRD_Co.dta",
+    "size": 802432,
+    "sha256": "e1ec8858b9a7b2446292d763331754bf3b6da221212892a9dabbfc64b3510022"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/06_balance_sheet/FS_Combas(1).dta",
+    "relative": "01_raw/06_balance_sheet/FS_Combas(1).dta",
+    "size": 16595312,
+    "sha256": "4ee4b531c1131ae3793a92ea99f4c86993637e0c33de21bff7bbe14608360d9f"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/06_balance_sheet/FS_Combas.dta",
+    "relative": "01_raw/06_balance_sheet/FS_Combas.dta",
+    "size": 9865224,
+    "sha256": "b3fc432052ae746c858e4d68ca7506e6a62836c3cfa90e47bcd3fccb904ec316"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/07_income_statement/FS_Comins.dta",
+    "relative": "01_raw/07_income_statement/FS_Comins.dta",
+    "size": 13276286,
+    "sha256": "bf7f6424df7aecf5d72da14f546fc0512d08d7c88be29e31d4bd9c2ffd1e136d"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/08_shareholders/HLD_Shareholders.dta",
+    "relative": "01_raw/08_shareholders/HLD_Shareholders.dta",
+    "size": 205003760,
+    "sha256": "9637c14a35c5dc417cf215f2e962bb7aec4fb36b3972a8aad8272f262bcc80f2"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/08_shareholders/HLD_Shareholders1.dta",
+    "relative": "01_raw/08_shareholders/HLD_Shareholders1.dta",
+    "size": 21899620,
+    "sha256": "eecde4d783746104c356acbab1989f10d8e95a7227aec8ee3110e718c5c2d8c0"
+  },
+  {
+    "path": "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/09_original_download_test/FS_Combas.xlsx",
+    "relative": "01_raw/09_original_download_test/FS_Combas.xlsx",
+    "size": 1784872,
+    "sha256": "3d5ec1498c3d41f1c8b9e576adaa8b55902fd1d7ccb05f1e39f71b2ebc8624a4"
+  }
+]

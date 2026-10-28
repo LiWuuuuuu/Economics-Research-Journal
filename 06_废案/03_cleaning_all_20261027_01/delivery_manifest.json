@@ -1,0 +1,497 @@
+[
+  {
+    "file": "README.md",
+    "bytes": 1961,
+    "sha256": "b7c4bbcf065ff1c6e878c671cc58e2eabd4f8ada846eeec4f3b5e491361a6289"
+  },
+  {
+    "file": "全部数据清洗报告.md",
+    "bytes": 10145,
+    "sha256": "0bde9a5d3b2cea80665e4b59b2e8849392aea17ba0979d3793ae6063a3315d49"
+  },
+  {
+    "file": "source_manifest_before.json",
+    "bytes": 7118,
+    "sha256": "d7f5adf6b6ed279ba94b8ce42e2923e372df804df314fe18432327602312a583"
+  },
+  {
+    "file": "source_integrity_verified.json",
+    "bytes": 10956,
+    "sha256": "9cd9b0649244ce72b6b7f3f07ab0a4999cb4163e6d2e5a10c549bc53a2c9f4d4"
+  },
+  {
+    "file": "00_run_all.do",
+    "bytes": 286,
+    "sha256": "70987888a75af26e53827fb098e45a54eaed15b9209b1c07c93aa6e47ee64c1b"
+  },
+  {
+    "file": "01_master.do",
+    "bytes": 1056,
+    "sha256": "cc9de2a49eb74b838bb25541a2fd2a1bf5b027acdd1e270dd4972d2383e02308"
+  },
+  {
+    "file": "02_helpers.do",
+    "bytes": 1863,
+    "sha256": "e5ad2752abc462994548f929f3ce931fc54ddb65184da4a4ab397ba064b192f7"
+  },
+  {
+    "file": "03_financial.do",
+    "bytes": 5683,
+    "sha256": "20ea6402a6d41d0a8e18279f71efa6aa933bde3646e4d2468fe841ef18ab13ca"
+  },
+  {
+    "file": "04_market_weekly.do",
+    "bytes": 1159,
+    "sha256": "d9e2fe6283644f2e81b063d1dc166441abb41b2ae37c6898acfb16de960f0a37"
+  },
+  {
+    "file": "05_stock_weekly.do",
+    "bytes": 3026,
+    "sha256": "0155de2237c1c94565cb0ed61076eeb25c0f52b84ab786b2a8cdc5100ba5649b"
+  },
+  {
+    "file": "06_capital_company.do",
+    "bytes": 2532,
+    "sha256": "7acead393c9963ba8132f92c173590b639121cf3df7dd2db47778572bcc8685d"
+  },
+  {
+    "file": "07_daily.do",
+    "bytes": 7410,
+    "sha256": "078998b07a71e3c740b07968829d12371d9328395a47a9e30c1a5f18ccbc170a"
+  },
+  {
+    "file": "08_shareholders.do",
+    "bytes": 3090,
+    "sha256": "16d1555d3c91707f555a25753d1064c9f824f859ca6f57376875acaf3671019a"
+  },
+  {
+    "file": "09_audit.do",
+    "bytes": 2390,
+    "sha256": "a339255666a4546e80fbb71e37f887d451c1ee10c2ee07f59af1cd03ad654ac8"
+  },
+  {
+    "file": "10_financial_panel.do",
+    "bytes": 2382,
+    "sha256": "82bb562401ec14d2f2a3253d3a7854b47ed468a8c7547790036a689ab2ad9be4"
+  },
+  {
+    "file": "11_excel_reference.do",
+    "bytes": 771,
+    "sha256": "9d06abea8a11282ad2851e115b789dd80d141a186ec5620cfb34d4f37c39a694"
+  },
+  {
+    "file": "12_verify_all_sources.do",
+    "bytes": 12179,
+    "sha256": "ae47ac181ab581a1bdadcda2ae334487a462a22e3f93b9c9d13dcb05006c5130"
+  },
+  {
+    "file": "13_quality_checks.do",
+    "bytes": 3130,
+    "sha256": "696aa7da4b9dedbd3914c42e9c8e3827518799b8e9bb9f319935e352da0c6978"
+  },
+  {
+    "file": "14_annual_master_verified.do",
+    "bytes": 3504,
+    "sha256": "b2a710843c9b25a884da982116f50dd726738945c70c4ba055ee9ed62428c9bf"
+  },
+  {
+    "file": "15_source_change_check.do",
+    "bytes": 699,
+    "sha256": "2fee8f8c556934006efb1ed958e15b303286470d063b479a527dc46ff430ce3b"
+  },
+  {
+    "file": "run_01/balance_annual.dta",
+    "bytes": 5668218,
+    "sha256": "cb090da82d8afbaf00ba1f3fed3e9b1b1b0a475657999ba2346bcd6749577908"
+  },
+  {
+    "file": "run_01/audit_metrics.csv",
+    "bytes": 13291,
+    "sha256": "7ecd4619b97d80d8af2190dd7f38a4c97331bc9aab20a4b2074b37e236c6ae1c"
+  },
+  {
+    "file": "run_01/quality_checks.log",
+    "bytes": 6447,
+    "sha256": "92ced912c1f4b069f5cc2dd6efb9cd8b4a8f86f3a5c43d8a1e3bc75f19d14141"
+  },
+  {
+    "file": "run_01/equity_annual_review.dta",
+    "bytes": 87798,
+    "sha256": "efeca52faede6c6a58bd1f1c14d283bd71a09c3fdea4e6ba656bc9353d40221a"
+  },
+  {
+    "file": "run_01/annual_master_coverage.csv",
+    "bytes": 5413769,
+    "sha256": "d0307a0245c17ca3d637dcebb35efa74f6db821c4961cc5a271466662c4a4a5c"
+  },
+  {
+    "file": "run_01/shareholders_annual.dta",
+    "bytes": 3813889,
+    "sha256": "c9f9f50879c02d47e303839ccff0900d5d2f38d8552d1347ac6b855c8ef9d321"
+  },
+  {
+    "file": "run_01/big4_scope_differences.csv",
+    "bytes": 34192,
+    "sha256": "282c57d716eb4cbbac8a63bf1db14f8b0013643826456c5a83cc48afcf31aa11"
+  },
+  {
+    "file": "run_01/income_annual_by_year.csv",
+    "bytes": 512,
+    "sha256": "027ead38c5cfc01481604741f358066979437cdc8a518f20e9ad4e03bbbdb694"
+  },
+  {
+    "file": "run_01/market_missing_returns.csv",
+    "bytes": 336,
+    "sha256": "1f9b7e10d6b60e8ef444a1507d52ce59c305a7c33c3b53ad4864acca1f000fff"
+  },
+  {
+    "file": "run_01/merge_shareholders_counts.csv",
+    "bytes": 680,
+    "sha256": "ce9de6bc64f4696422eaa5e8745997c28adf4948940db4996968e74923edb7c2"
+  },
+  {
+    "file": "run_01/income_other_records.dta",
+    "bytes": 39242810,
+    "sha256": "cab1d19a367e6c5ff8c299cf8a8ce821bb13f42f15247d9e35db18cfd0303c8c"
+  },
+  {
+    "file": "run_01/daily_trading_by_year.csv",
+    "bytes": 816,
+    "sha256": "131a1ece63edc8315b36420ba899a31025ce2f4f618b6de4188e4f9ad723f3db"
+  },
+  {
+    "file": "run_01/source_verification.csv",
+    "bytes": 1066,
+    "sha256": "850b2eb78991679135e3a08acc1a9013ccc52624a4bd1b225d0c02068f274c7b"
+  },
+  {
+    "file": "run_01/equity_annual.dta",
+    "bytes": 5209954,
+    "sha256": "48c5c0379384c8c6dbde3b773e5b319af9ffddb00b4bd77ba0f891676098e5bb"
+  },
+  {
+    "file": "run_01/income_annual.dta",
+    "bytes": 4828814,
+    "sha256": "17892023d2f672041caede4a18522cc73c4e9430a1190d377d5c039ddcc1c85a"
+  },
+  {
+    "file": "run_01/balance_annual_review.dta",
+    "bytes": 457241,
+    "sha256": "072305104d5992e97bfad3e3fb8852ccf32e2e7743d134d0fe7d50680131ba09"
+  },
+  {
+    "file": "run_01/capital_events_review.dta",
+    "bytes": 21078,
+    "sha256": "7fe4b6b6d419f32a1598b780ac3452a9cbac02511921208f22cb783139fdf19c"
+  },
+  {
+    "file": "run_01/auditor_name_mapping.csv",
+    "bytes": 42505,
+    "sha256": "93d17e1f155052db0e587053bd51fbc140dd66625b1672c99e7ff7bb2c4c925d"
+  },
+  {
+    "file": "run_01/balance_annual_by_year.csv",
+    "bytes": 782,
+    "sha256": "355e72cc2c2d18deeb313370c6b172951f08ae568fab24db3cf1183e7560f6be"
+  },
+  {
+    "file": "run_01/market_weekly_clean.dta",
+    "bytes": 206507,
+    "sha256": "8cc79b4feb5a19fc3c5dfbcd078f4203cc5ce599c6b855f7c0ab6213beca275f"
+  },
+  {
+    "file": "run_01/equity_raw_by_year.csv",
+    "bytes": 717,
+    "sha256": "36c4a8e8d2e3ec3f8796fe4e0cd0a6c2b5fd3ba96eb52a0051d34289c4345fc0"
+  },
+  {
+    "file": "run_01/stock_weekly_by_year.csv",
+    "bytes": 681,
+    "sha256": "260d5cfcbd81d3255cedf33bd1e0956abf20d2ceaad04dd0fbde9c7c59677fc8"
+  },
+  {
+    "file": "run_01/excel_reference_valid_keys.dta",
+    "bytes": 7368803,
+    "sha256": "c5d13e81a0bf0fac01b0821fc9b063cb1f797072b291c33935079fd74c5005ef"
+  },
+  {
+    "file": "run_01/shareholders_annual_review.dta",
+    "bytes": 34328,
+    "sha256": "a7d5b7601cdde263340d04f072cf5b330c56e3aa27a132a18cb37d28697c6853"
+  },
+  {
+    "file": "run_01/source_rows.dta",
+    "bytes": 5795,
+    "sha256": "6f33c31986b2184d7cb514ea5c31d93e9933bf9aca7d9e0f37a3c166193aad4d"
+  },
+  {
+    "file": "run_01/company_snapshot_review.dta",
+    "bytes": 466480,
+    "sha256": "a4395c35ff5c61ef29c6350611d02b5a10f9439b7f38ce7acc93ff1b6da9c3ce"
+  },
+  {
+    "file": "run_01/daily_turnover_base.dta",
+    "bytes": 1045909638,
+    "sha256": "28ace59672d5b391d3b0b77498ac35a0c1730691d754ea7585f9f2e7a504ac81"
+  },
+  {
+    "file": "run_01/stock_weekly_review.dta",
+    "bytes": 206880,
+    "sha256": "51a90ff03f0716923968806ec200869f9ea447f09c20792bd987eab185a31481"
+  },
+  {
+    "file": "run_01/turnover_monthly_base.dta",
+    "bytes": 17457660,
+    "sha256": "ae0f2eca5d1bce311ff0cef7e0df2ba313d886a9d725a4d69e7ed68c807da6b5"
+  },
+  {
+    "file": "run_01/merge_marketvalue_counts.csv",
+    "bytes": 678,
+    "sha256": "07712abe7e7ecc9e7f11c33ef5388796ef1526343fe345793c35f8bfbaa4ded7"
+  },
+  {
+    "file": "run_01/daily_trading_review.dta",
+    "bytes": 18480,
+    "sha256": "a8fef1f3f33c6bf708c56c6d43f9e4f80796be8916b2ef553a2c16e9dc26043b"
+  },
+  {
+    "file": "run_01/trading_status_annual.dta",
+    "bytes": 944040,
+    "sha256": "21d5c1ac9cb1a45035d91f1ae37bbdebd4435716830073e0539ebd18fe49c2c0"
+  },
+  {
+    "file": "run_01/market_value_yearend.dta",
+    "bytes": 2030160,
+    "sha256": "1e04c6273ba83f5f0d4998e99d383f018d8cb6628f38279dd4214f540fb76c0f"
+  },
+  {
+    "file": "run_01/company_snapshot_clean.dta",
+    "bytes": 1343840,
+    "sha256": "e4d5cb2dbc00d1696d70751516c83fa83f46168e994282764216e4ed2df7dc9e"
+  },
+  {
+    "file": "run_01/annual_master_verified.log",
+    "bytes": 10399,
+    "sha256": "ab877367126ad562e8ffda0fa0f1fadc44b8aee68424afb01c36bf499ba31a2d"
+  },
+  {
+    "file": "run_01/audit_annual_by_year.csv",
+    "bytes": 640,
+    "sha256": "5865cbef068cee8ad37e5ee1df8c60d76ea073594177adbf3ffa64d59497f341"
+  },
+  {
+    "file": "run_01/stock_market_unmatched_summary.csv",
+    "bytes": 52,
+    "sha256": "adc1b8304722f76cb6d6918dff24b9bfca45a85d54f356f9b845a3006e5996c1"
+  },
+  {
+    "file": "run_01/source_verification.dta",
+    "bytes": 6455,
+    "sha256": "ed5798708d4337620e884ef1f6754b29818ed027319b7f741d9e80c576177b07"
+  },
+  {
+    "file": "run_01/shareholders_detail_review.dta",
+    "bytes": 4073936,
+    "sha256": "d6be801dec9f7f829832c00b5f5669b8b33f9b3186b96e14e5ea17c7001f750e"
+  },
+  {
+    "file": "run_01/excel_reference_by_year.csv",
+    "bytes": 98,
+    "sha256": "544a4834abf052f0d9829d9c73874a35126a4b7db655c70d03330e9d7e704cbb"
+  },
+  {
+    "file": "run_01/master.log",
+    "bytes": 52885,
+    "sha256": "83a78cd9d3be05df18a5300865e608e63979a76fe9fcb47dd126546d983cf7a9"
+  },
+  {
+    "file": "run_01/equity_annual_by_year.csv",
+    "bytes": 637,
+    "sha256": "d97134b2826f4694b82503d9031a0032f553492fb824fd7ec251027945922eb0"
+  },
+  {
+    "file": "run_01/audit_other_records.dta",
+    "bytes": 631212,
+    "sha256": "1647df3f0644d2e5574633ab4e9682ca74dfcb5344a1f838c247ebf09746a267"
+  },
+  {
+    "file": "run_01/merge_tradingstatus_counts.csv",
+    "bytes": 680,
+    "sha256": "19e4f9be94ae9d86145b8d71fe05f2f5501e14044c05917289975d712c56dce7"
+  },
+  {
+    "file": "run_01/income_raw_by_year.csv",
+    "bytes": 538,
+    "sha256": "a5962c7dbbe1af5aee2e8419f4f562340e13688af7093371d8c67e4d6a258a63"
+  },
+  {
+    "file": "run_01/audit_metrics.dta",
+    "bytes": 46755,
+    "sha256": "34e4a840db8c47a548e96a2d60c71ca30abdd3023991c066c4293b245d2dc58e"
+  },
+  {
+    "file": "run_01/financial_panel_by_year.csv",
+    "bytes": 521,
+    "sha256": "961e72886b74781a0fd22a51663ead0028bda2c733cde0feb9a2121c0429fe75"
+  },
+  {
+    "file": "run_01/financial_panel_base.dta",
+    "bytes": 6203888,
+    "sha256": "6aca7f86f12e930d24af1c10df11a5d724d046bf86e4a489bd1ab20b427179d1"
+  },
+  {
+    "file": "run_01/merge_weekly_counts.csv",
+    "bytes": 673,
+    "sha256": "9e9ad84c36f9e47f2fd4cb1b4d3bf9c8c7dbde1edfe2437c6ae7188b82670dae"
+  },
+  {
+    "file": "run_01/audit_annual.dta",
+    "bytes": 27786162,
+    "sha256": "8f68be3167d3f144ebf96f4bc01aae7687ab23ad644635f9ab3b45367dd8eae7"
+  },
+  {
+    "file": "run_01/audit_detail_review.dta",
+    "bytes": 27514026,
+    "sha256": "11814dc8e08267b8d58d8631ce1740112031166ab048b717baa24f6774ab9793"
+  },
+  {
+    "file": "run_01/shareholders_annual_by_year.csv",
+    "bytes": 534,
+    "sha256": "363657895b6df1ee425256c53e19f57f57d0691c21052faf05a8b167391b5126"
+  },
+  {
+    "file": "run_01/daily_trading_clean.dta",
+    "bytes": 718565700,
+    "sha256": "ec7bb3b06c0cc4f94709a8ec3e94d6c8a99b37b38de5577844fb272a19b24ef6"
+  },
+  {
+    "file": "run_01/stock_market_unmatched.dta",
+    "bytes": 23728,
+    "sha256": "2d053877f6c2a6fb66059db0f35bd647c01726e7d743ec01a7f39dd55bfb07a2"
+  },
+  {
+    "file": "run_01/audit_detail_by_year.csv",
+    "bytes": 564,
+    "sha256": "496e82509c7c581f8b1f4cde0ebbcb94724255cf5f7596855bf21a1e90f11b4e"
+  },
+  {
+    "file": "run_01/capital_events_clean.dta",
+    "bytes": 4393497,
+    "sha256": "41b5de75d9e1f04b68fa44a98a6df5237baa2f2fba4c750d7993fa82db2c404a"
+  },
+  {
+    "file": "run_01/balance_other_records.dta",
+    "bytes": 21428952,
+    "sha256": "b0d9829a08cb32bb42b23fa06b62efd27bb0f0dfafcc29b54049d4c13559352d"
+  },
+  {
+    "file": "run_01/source_rows.csv",
+    "bytes": 1016,
+    "sha256": "49b03d2daa962c2e46649117ba9ac9baf49ec7cfa37c3d8a67cc3718352d9c7c"
+  },
+  {
+    "file": "run_01/capital_events_by_year.csv",
+    "bytes": 866,
+    "sha256": "b583c1aeb2652753fdb881c7d6a663ff4c6593dd6231278a9a4400a019ae028f"
+  },
+  {
+    "file": "run_01/annual_master_base.dta",
+    "bytes": 30995754,
+    "sha256": "8e945a7f1477fddc089d2c0b1d0c4db925460556d8b2781069ee5b0dbf884e96"
+  },
+  {
+    "file": "run_01/market_weekly_review.dta",
+    "bytes": 12194,
+    "sha256": "b2656b6c54468ce4fc0bd66d8dcdc5a5644d30bdfd481b51355774be4ceee712"
+  },
+  {
+    "file": "run_01/income_annual_review.dta",
+    "bytes": 515259,
+    "sha256": "286009f0ebcac8081888f7428894b7c2df01f7b926e1c525be3dd9623580aff9"
+  },
+  {
+    "file": "run_01/big4_counts_by_year.csv",
+    "bytes": 569,
+    "sha256": "ec30e94478b824e69842465d1cb3643eef4f11064869036f9c43b49ffd45b09c"
+  },
+  {
+    "file": "run_01/verification.log",
+    "bytes": 16821,
+    "sha256": "0b172b6b448f284771a81ba1af2216e9646032e4b17684d9ed18920a2f8ab5e1"
+  },
+  {
+    "file": "run_01/market_weekly_by_year.csv",
+    "bytes": 471,
+    "sha256": "9f841e388fb1a369d28b6c63387f636497b27e808c3b750ed6564ec2055d7cce"
+  },
+  {
+    "file": "run_01/audit_detail_clean.dta",
+    "bytes": 28400814,
+    "sha256": "4b7b101c807c6b1dfa6145714fec5352b210764a82fcb36f8cc95749ae3ccb00"
+  },
+  {
+    "file": "run_01/financial_panel_review.dta",
+    "bytes": 1123178,
+    "sha256": "dfb9658781ec70b64aa7a8380a164c82f6ae220ddca07eba21d2f04d1847e9a3"
+  },
+  {
+    "file": "run_01/source_change_check.log",
+    "bytes": 3742,
+    "sha256": "39fc4e37d16661ff3eb3f0e7da43aa5faf3d0ae54e5c22bea38485b1e6a681c4"
+  },
+  {
+    "file": "run_01/equity_other_records.dta",
+    "bytes": 43908000,
+    "sha256": "c2b2849b56ff9be31ba11b548f819e2efd1b3f759a1a92b7598a3accafc01354"
+  },
+  {
+    "file": "run_01/balance_raw_by_year.csv",
+    "bytes": 807,
+    "sha256": "626af9867d355e53760f1d43e45d1c489b8fdca842c264466277c4eb58f1d67b"
+  },
+  {
+    "file": "run_01/merge_company_snapshot_counts.csv",
+    "bytes": 341,
+    "sha256": "e7a91e34d101655ecd4055762442b001f1d5c68e65f0e3b04a845713f0b1225a"
+  },
+  {
+    "file": "run_01/stock_weekly_clean.dta",
+    "bytes": 131048899,
+    "sha256": "2efc8173a5faf52b09aa25e560c45f2beccd4523876ea7d09a0d4197a2678faf"
+  },
+  {
+    "file": "run_01/stock_weekly_annual_coverage.dta",
+    "bytes": 1197020,
+    "sha256": "e8a5ffddbd4594e2bee0256a7f784ac56c2340d9c483cd5a7979a53ca318f4d8"
+  },
+  {
+    "file": "run_01/shareholders_detail_clean.dta",
+    "bytes": 483143792,
+    "sha256": "36ee5f9d72e95dc4d58e87eca5ff3ca0da4e5b4a1dd8ad8ea3743a163864d8f1"
+  },
+  {
+    "file": "run_01/merge_audit_counts.csv",
+    "bytes": 673,
+    "sha256": "0156afb8f5925275343a6b0b2951f352380397507e210351b4ca19d475b4a4b2"
+  },
+  {
+    "file": "run_01/turnover_missing_by_year.csv",
+    "bytes": 530,
+    "sha256": "7d9329ffdf2553a7f020df15d2d9c9ea1e6854ae923effceea66e3292e654afa"
+  },
+  {
+    "file": "run_01/excel_reference_imported.dta",
+    "bytes": 7163185,
+    "sha256": "f9e45b0c124b22a72c9719c5904536603ed348c4db2a1a1a7cbe290f1d8e2359"
+  },
+  {
+    "file": "run_01/shareholders_detail_by_year.csv",
+    "bytes": 657,
+    "sha256": "6857b6c90fdf6cee5e953be83e5bf09b604f73e8210db085af6d3da5eeed0a0f"
+  },
+  {
+    "file": "run_01/stock_weekly_usable.dta",
+    "bytes": 130857939,
+    "sha256": "51d9d5185bb33d4b7cdfc5578e48fc0d3876fb220404290810bb103e82e42188"
+  }
+]

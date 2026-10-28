@@ -1,0 +1,475 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      Stata 19.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2025 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 4-core  perpetual
+Serial number: 501906306912
+  Licensed to: 段天海
+               
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do 01_clean_balance.do 
+
+. version 19.0
+
+. set more off
+
+. * 本程序在独立批处理进程执行，不影响用户打开的 Stata 窗口。
+. * 在本 do 文件所在的新输出文件夹运行；已有输出时立即停止，绝不覆盖。
+. local raw "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_
+> data/raw/paper_replication_raw_data_2026-10-21/01_raw/06_balance_sheet/FS_Com
+> bas.dta"
+
+. foreach f in cleaning.log audit_counts.dta audit_counts.csv annual_counts.csv
+>  balance_annual_2006_2019.dta balance_flagged_rows.dta balance_excluded_recor
+> ds.dta {
+  2.     confirm new file "`f'"
+  3. }
+
+. log using "cleaning.log", text
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/balance_clean_20261026_0
+> 1/cleaning.log
+  log type:  text
+ opened on:  26 Oct 2026, 11:52:32
+
+. confirm file "`raw'"
+
+. use "`raw'", clear
+(CSMAR)
+
+. describe
+
+Contains data from /Users/duantianhai/Documents/GitHub/Economics-Research-Journ
+> al/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/06_balance_sheet/
+> FS_Combas.dta
+ Observations:       182,596                  CSMAR
+    Variables:             7                  18 Oct 2026 23:38
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+Stkcd           str6    %-9s                  [证券代码]-以沪、深、北证券交易所
+                                                > 公布的证券代码为准。
+ShortName       str13   %-9s                  [证券简称]-以沪、深、北证券交易所
+                                                > 公布的证券简称为准。
+Accper          str10   %-9s                  [统计截止日期]-YYYY-MM-DD，前四位
+                                                > 表示会计报表公布年度
+Typrep          str1    %-9s                  [报表类型]-指上市公司的财务报表中
+                                                > 反映的是合并报表或者母公司报
+                                                > 表。“A＝合并报表”、“B＝母公司
+                                                > 报表”。
+A001101000      double  %10.0g                [货币资金]-公司库存现金、银行结算
+                                                > 户存款、外埠存款、银行汇票存
+                                                > 款、银行本票存款、信用卡存款
+                                                > 、信用证保证金存款等的合计数
+                                                > 。1990年起使用
+A001000000      double  %10.0g                [资产总计]-资产各项目之总计。1990
+                                                > 年起使用
+A002101000      double  %10.0g                [短期借款]-公司借入的尚未归还的的
+                                                > 一年期以下(含一年)的借款。
+-------------------------------------------------------------------------------
+Sorted by: 
+
+. count
+  182,596
+
+. local n_raw = _N
+
+. * 原始行号用来追溯；原始7字段均保留。
+. generate long source_row = _n
+
+. count if missing(Stkcd) | missing(Accper) | missing(Typrep)
+  0
+
+. assert !missing(Stkcd) & !missing(Accper) & !missing(Typrep)
+
+. assert strlen(Stkcd)==6
+
+. assert regexm(Stkcd,"^[0-9][0-9][0-9][0-9][0-9][0-9]$")
+
+. duplicates report Stkcd ShortName Accper Typrep A001101000 A001000000 A002101
+> 000
+
+Duplicates in terms of Stkcd ShortName Accper Typrep A001101000 A001000000
+    A002101000
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |       182596             0
+--------------------------------------
+
+. isid Stkcd Accper Typrep
+
+. * 使用会计截止日期，而非报告披露年份；日期无法解析时停止。
+. generate double report_date = daily(Accper,"YMD")
+
+. format report_date %tdCCYY-NN-DD
+
+. assert !missing(report_date)
+
+. assert Accper == string(report_date,"%tdCCYY-NN-DD")
+
+. generate int year = year(report_date)
+
+. generate str5 report_md = substr(Accper,6,5)
+
+. tabulate year, missing
+
+       year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       2006 |      7,458        4.08        4.08
+       2007 |      8,054        4.41        8.50
+       2008 |      8,509        4.66       13.16
+       2009 |      8,907        4.88       18.03
+       2010 |     10,430        5.71       23.75
+       2011 |     11,891        6.51       30.26
+       2012 |     12,786        7.00       37.26
+       2013 |     13,022        7.13       44.39
+       2014 |     13,558        7.43       51.82
+       2015 |     14,836        8.13       59.94
+       2016 |     16,037        8.78       68.72
+       2017 |     18,086        9.90       78.63
+       2018 |     19,132       10.48       89.11
+       2019 |     19,890       10.89      100.00
+------------+-----------------------------------
+      Total |    182,596      100.00
+
+. tabulate report_md, missing
+
+  report_md |      Freq.     Percent        Cum.
+------------+-----------------------------------
+      01-01 |     37,921       20.77       20.77
+      03-31 |     34,663       18.98       39.75
+      06-30 |     36,231       19.84       59.59
+      09-30 |     35,859       19.64       79.23
+      12-31 |     37,922       20.77      100.00
+------------+-----------------------------------
+      Total |    182,596      100.00
+
+. tabulate Typrep, missing
+
+    [报表类 |
+   型]-指上 |
+     市公司 |
+     的财务 |
+     报表中 |
+     反映的 |
+     是合并 |
+     报表或 |
+     者母公 |
+     司报表 |
+     。“A＝ |
+     合并报 |
+      表”、 |
+     “B＝母 |
+     公司报 |
+      表”。 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          A |    182,596      100.00      100.00
+------------+-----------------------------------
+      Total |    182,596      100.00
+
+. * 年度基础表保留2006—2019年；回归解释变量2007—2018年在后续合并时限定。
+. generate byte keep_annual = Typrep=="A" & month(report_date)==12 & day(report
+> _date)==31 & inrange(year,2006,2019)
+
+. generate str80 exclusion_reason = ""
+(182,596 missing values generated)
+
+. replace exclusion_reason = "Not consolidated" if Typrep!="A"
+(0 real changes made)
+
+. replace exclusion_reason = "Not December 31" if Typrep=="A" & report_md!="12-
+> 31"
+(144,674 real changes made)
+
+. replace exclusion_reason = "Outside 2006-2019" if Typrep=="A" & report_md=="1
+> 2-31" & !inrange(year,2006,2019)
+(0 real changes made)
+
+. count if !keep_annual
+  144,674
+
+. local n_excluded = r(N)
+
+. preserve
+
+.     keep if !keep_annual
+(37,922 observations deleted)
+
+.     save "balance_excluded_records.dta"
+file balance_excluded_records.dta saved
+
+. restore
+
+. keep if keep_annual
+(144,674 observations deleted)
+
+. local n_annual = _N
+
+. assert `n_raw' == `n_excluded' + `n_annual'
+
+. isid Stkcd year
+
+. sort Stkcd year
+
+. * 全部财务原值保留。缺失不等于0；可疑值只标记，待结合行业等信息复核。
+. generate byte flag_cash_missing = missing(A001101000)
+
+. generate byte flag_assets_missing = missing(A001000000)
+
+. generate byte flag_loan_missing = missing(A002101000)
+
+. generate byte flag_cash_negative = A001101000<0 if !missing(A001101000)
+(98 missing values generated)
+
+. generate byte flag_assets_nonpositive = A001000000<=0 if !missing(A001000000)
+
+. generate byte flag_loan_negative = A002101000<0 if !missing(A002101000)
+(2,857 missing values generated)
+
+. generate byte flag_cash_gt_assets = A001101000>A001000000 if !missing(A001101
+> 000,A001000000)
+(98 missing values generated)
+
+. generate byte flag_loan_gt_assets = A002101000>A001000000 if !missing(A002101
+> 000,A001000000)
+(2,857 missing values generated)
+
+. egen byte any_quality_flag = rowmax(flag_*)
+
+. label variable any_quality_flag "Any missing or suspicious financial value; r
+> etained"
+
+. label variable year "Fiscal year from accounting period end"
+
+. label variable source_row "Row number in original FS_Combas.dta"
+
+. misstable summarize A001101000 A001000000 A002101000
+                                                               Obs<.
+                                                +------------------------------
+               |                                | Unique
+      Variable |     Obs=.     Obs>.     Obs<.  | values        Min         Max
+  -------------+--------------------------------+------------------------------
+    A001101000 |        98              37,824  |   >500          0    5.70e+11
+    A002101000 |     2,857              35,065  |   >500          0    1.67e+11
+  -----------------------------------------------------------------------------
+
+. summarize A001101000 A001000000 A002101000, detail
+
+      [货币资金]-公司库存现金、银行结算
+      户存款、外埠存款、银行汇票存款、
+      银行本票存款、信用卡存款、信用证
+      保证金存款等的合计数。1990年起使用
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%      1307125              0
+ 5%     2.74e+07              0
+10%     6.35e+07              0       Obs              37,824
+25%     1.75e+08              0       Sum of wgt.      37,824
+
+50%     4.35e+08                      Mean           2.08e+09
+                        Largest       Std. dev.      1.11e+10
+75%     1.09e+09       4.74e+11
+90%     3.09e+09       4.75e+11       Variance       1.23e+20
+95%     6.56e+09       5.68e+11       Skewness       23.53694
+99%     3.25e+10       5.70e+11       Kurtosis       854.2757
+
+      [资产总计]-资产各项目之总计。1990年
+                          起使用
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     1.07e+08              0
+ 5%     3.73e+08              0
+10%     6.33e+08              0       Obs              37,922
+25%     1.22e+09       51133.68       Sum of wgt.      37,922
+
+50%     2.83e+09                      Mean           5.03e+10
+                        Largest       Std. dev.      6.83e+11
+75%     7.40e+09       2.54e+13
+90%     2.26e+10       2.61e+13       Variance       4.67e+23
+95%     5.23e+10       2.77e+13       Skewness       26.37425
+99%     4.68e+11       3.01e+13       Kurtosis       813.6122
+
+      [短期借款]-公司借入的尚未归还的的
+           一年期以下(含一年)的借款。
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              35,065
+25%     3.12e+07              0       Sum of wgt.      35,065
+
+50%     2.30e+08                      Mean           1.21e+09
+                        Largest       Std. dev.      4.41e+09
+75%     7.95e+08       1.12e+11
+90%     2.40e+09       1.15e+11       Variance       1.95e+19
+95%     4.71e+09       1.43e+11       Skewness       12.52545
+99%     1.77e+10       1.67e+11       Kurtosis       247.6895
+
+. tabulate year, missing
+
+Fiscal year |
+       from |
+ accounting |
+ period end |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       2006 |      1,547        4.08        4.08
+       2007 |      1,662        4.38        8.46
+       2008 |      1,717        4.53       12.99
+       2009 |      1,866        4.92       17.91
+       2010 |      2,221        5.86       23.77
+       2011 |      2,456        6.48       30.24
+       2012 |      2,586        6.82       37.06
+       2013 |      2,640        6.96       44.02
+       2014 |      2,803        7.39       51.42
+       2015 |      3,098        8.17       59.59
+       2016 |      3,435        9.06       68.64
+       2017 |      3,826       10.09       78.73
+       2018 |      3,930       10.36       89.10
+       2019 |      4,135       10.90      100.00
+------------+-----------------------------------
+      Total |     37,922      100.00
+
+. tabulate any_quality_flag
+
+Any missing |
+         or |
+ suspicious |
+  financial |
+     value; |
+   retained |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     34,973       92.22       92.22
+          1 |      2,949        7.78      100.00
+------------+-----------------------------------
+      Total |     37,922      100.00
+
+. * 机器可读的审计统计。
+. tempname audit
+
+. postfile `audit' str80 metric double value using "audit_counts.dta"
+
+. post `audit' ("raw_rows") (`n_raw')
+
+. post `audit' ("excluded_nonannual_or_outside_window") (`n_excluded')
+
+. post `audit' ("annual_rows") (`n_annual')
+
+. post `audit' ("duplicate_company_year_surplus") (0)
+
+. egen byte company_tag = tag(Stkcd)
+
+. count if company_tag
+  4,218
+
+. post `audit' ("annual_companies") (r(N))
+
+. foreach f of varlist flag_* any_quality_flag {
+  2.     count if `f'==1
+  3.     post `audit' ("`f'") (r(N))
+  4. }
+  98
+  0
+  2,857
+  0
+  3
+  0
+  0
+  88
+  2,949
+
+. count if inrange(year,2007,2018)
+  32,240
+
+. post `audit' ("annual_rows_2007_2018_before_other_filters") (r(N))
+
+. postclose `audit'
+
+. drop company_tag
+
+. save "balance_annual_2006_2019.dta"
+file balance_annual_2006_2019.dta saved
+
+. preserve
+
+.     keep if any_quality_flag==1
+(34,973 observations deleted)
+
+.     save "balance_flagged_rows.dta"
+file balance_flagged_rows.dta saved
+
+. restore
+
+. preserve
+
+.     collapse (count) observations=source_row (sum) flag_*, by(year)
+
+.     export delimited using "annual_counts.csv"
+file annual_counts.csv saved
+
+. restore
+
+. preserve
+
+.     use "audit_counts.dta", clear
+
+.     list, noobs abbreviate(50)
+
+  +-----------------------------------------------------+
+  |                                     metric    value |
+  |-----------------------------------------------------|
+  |                                   raw_rows   182596 |
+  |       excluded_nonannual_or_outside_window   144674 |
+  |                                annual_rows    37922 |
+  |             duplicate_company_year_surplus        0 |
+  |                           annual_companies     4218 |
+  |-----------------------------------------------------|
+  |                          flag_cash_missing       98 |
+  |                        flag_assets_missing        0 |
+  |                          flag_loan_missing     2857 |
+  |                         flag_cash_negative        0 |
+  |                    flag_assets_nonpositive        3 |
+  |-----------------------------------------------------|
+  |                         flag_loan_negative        0 |
+  |                        flag_cash_gt_assets        0 |
+  |                        flag_loan_gt_assets       88 |
+  |                           any_quality_flag     2949 |
+  | annual_rows_2007_2018_before_other_filters    32240 |
+  +-----------------------------------------------------+
+
+.     export delimited using "audit_counts.csv"
+file audit_counts.csv saved
+
+. restore
+
+. display "BALANCE_CLEANING_COMPLETED"
+BALANCE_CLEANING_COMPLETED
+
+. log close
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/balance_clean_20261026_0
+> 1/cleaning.log
+  log type:  text
+ closed on:  26 Oct 2026, 11:52:33
+-------------------------------------------------------------------------------
+
+. 
+end of do-file

@@ -1,0 +1,534 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/verification.log
+  log type:  text
+ opened on:  27 Oct 2026, 22:33:36
+
+. tempname checks
+
+. postfile `checks' int source_id str160 source long rows byte raw_values_match using "$OUT/source_verification.dta"
+
+. use "$OUT/balance_annual.dta", clear
+(CSMAR)
+
+. append using "$OUT/balance_other_records.dta"
+
+. isid source_id source_row
+
+. frame put Stkcd ShortName Accper Typrep A001101000 A001000000 A002101000 source_row if source_id==17, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd ShortName Accper Typrep A001101000 A001000000 A002101000 using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_repli
+> cation_raw_data_2026-10-21/01_raw/06_balance_sheet/FS_Combas.dta", all
+           Stkcd: match
+       ShortName: match
+          Accper: match
+          Typrep: match
+      A001101000: match
+      A001000000: match
+      A002101000: match
+
+. frame sourcecheck: count
+  182,596
+
+. post `checks' (17) ("01_raw/06_balance_sheet/FS_Combas.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. use "$OUT/equity_annual.dta", clear
+(CSMAR)
+
+. append using "$OUT/equity_other_records.dta"
+
+. isid source_id source_row
+
+. frame put Stkcd ShortName Accper Typrep A003100000 A003000000 source_row if source_id==16, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd ShortName Accper Typrep A003100000 A003000000 using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_
+> data_2026-10-21/01_raw/06_balance_sheet/FS_Combas(1).dta", all
+           Stkcd: match
+       ShortName: match
+          Accper: match
+          Typrep: match
+      A003100000: match
+      A003000000: match
+
+. frame sourcecheck: count
+  360,672
+
+. post `checks' (16) ("01_raw/06_balance_sheet/FS_Combas(1).dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. use "$OUT/income_annual.dta", clear
+(CSMAR)
+
+. append using "$OUT/income_other_records.dta"
+
+. isid source_id source_row
+
+. frame put Stkcd ShortName Accper Typrep B002000000 source_row if source_id==18, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd ShortName Accper Typrep B002000000 using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-1
+> 0-21/01_raw/07_income_statement/FS_Comins.dta", all
+           Stkcd: match
+       ShortName: match
+          Accper: match
+          Typrep: match
+      B002000000: match
+
+. frame sourcecheck: count
+  349,277
+
+. post `checks' (18) ("01_raw/07_income_statement/FS_Comins.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. use "$OUT/market_weekly_clean.dta", clear
+(CSMAR)
+
+. isid source_id source_row
+
+. frame put Markettype Trdwnt Wretwdeq Wretwdos Wretwdtl source_row if source_id==2, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Markettype Trdwnt Wretwdeq Wretwdos Wretwdtl using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_20
+> 26-10-21/01_raw/01_weekly_market/TRD_Weekm.dta", all
+      Markettype: match
+          Trdwnt: match
+        Wretwdeq: match
+        Wretwdos: match
+        Wretwdtl: match
+
+. frame sourcecheck: count
+  3,411
+
+. post `checks' (2) ("01_raw/01_weekly_market/TRD_Weekm.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. use "$OUT/stock_weekly_clean.dta", clear
+(CSMAR)
+
+. isid source_id source_row
+
+. frame put Stkcd Trdwnt Clsdt Ndaytrd Wretwd Markettype source_row if source_id==3, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trdwnt Clsdt Ndaytrd Wretwd Markettype using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_20
+> 26-10-21/01_raw/02_weekly_stock/TRD_Week.dta", all
+           Stkcd: match
+          Trdwnt: match
+           Clsdt: match
+         Ndaytrd: match
+          Wretwd: match
+      Markettype: match
+
+. frame sourcecheck: count
+  1,000,000
+
+. post `checks' (3) ("01_raw/02_weekly_stock/TRD_Week.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Trdwnt Clsdt Ndaytrd Wretwd Markettype source_row if source_id==4, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trdwnt Clsdt Ndaytrd Wretwd Markettype using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_20
+> 26-10-21/01_raw/02_weekly_stock/TRD_Week1.dta", all
+           Stkcd: match
+          Trdwnt: match
+           Clsdt: match
+         Ndaytrd: match
+          Wretwd: match
+      Markettype: match
+
+. frame sourcecheck: count
+  701,727
+
+. post `checks' (4) ("01_raw/02_weekly_stock/TRD_Week1.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. use "$OUT/daily_trading_clean.dta", clear
+(CSMAR)
+
+. isid source_id source_row
+
+. frame put Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta source_row if source_id==5, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_r
+> aw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(2).dta", all
+           Stkcd: match
+           Trddt: match
+        Dnshrtrd: match
+         Dsmvosd: match
+         Dsmvtll: match
+      Markettype: match
+          Trdsta: match
+
+. frame sourcecheck: count
+  1,000,000
+
+. post `checks' (5) ("01_raw/03_daily_trading/TRD_Dalyr(2).dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta source_row if source_id==6, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_r
+> aw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(4).dta", all
+           Stkcd: match
+           Trddt: match
+        Dnshrtrd: match
+         Dsmvosd: match
+         Dsmvtll: match
+      Markettype: match
+          Trdsta: match
+
+. frame sourcecheck: count
+  1,000,000
+
+. post `checks' (6) ("01_raw/03_daily_trading/TRD_Dalyr(4).dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta source_row if source_id==7, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_r
+> aw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(5).dta", all
+           Stkcd: match
+           Trddt: match
+        Dnshrtrd: match
+         Dsmvosd: match
+         Dsmvtll: match
+      Markettype: match
+          Trdsta: match
+
+. frame sourcecheck: count
+  1,000,000
+
+. post `checks' (7) ("01_raw/03_daily_trading/TRD_Dalyr(5).dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta source_row if source_id==8, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_r
+> aw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1(2).dta", all
+           Stkcd: match
+           Trddt: match
+        Dnshrtrd: match
+         Dsmvosd: match
+         Dsmvtll: match
+      Markettype: match
+          Trdsta: match
+
+. frame sourcecheck: count
+  1,000,000
+
+. post `checks' (8) ("01_raw/03_daily_trading/TRD_Dalyr1(2).dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta source_row if source_id==9, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_r
+> aw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1(3).dta", all
+           Stkcd: match
+           Trddt: match
+        Dnshrtrd: match
+         Dsmvosd: match
+         Dsmvtll: match
+      Markettype: match
+          Trdsta: match
+
+. frame sourcecheck: count
+  1,000,000
+
+. post `checks' (9) ("01_raw/03_daily_trading/TRD_Dalyr1(3).dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta source_row if source_id==10, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_r
+> aw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1.dta", all
+           Stkcd: match
+           Trddt: match
+        Dnshrtrd: match
+         Dsmvosd: match
+         Dsmvtll: match
+      Markettype: match
+          Trdsta: match
+
+. frame sourcecheck: count
+  906,448
+
+. post `checks' (10) ("01_raw/03_daily_trading/TRD_Dalyr1.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta source_row if source_id==11, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_r
+> aw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2(1).dta", all
+           Stkcd: match
+           Trddt: match
+        Dnshrtrd: match
+         Dsmvosd: match
+         Dsmvtll: match
+      Markettype: match
+          Trdsta: match
+
+. frame sourcecheck: count
+  1,000,000
+
+. post `checks' (11) ("01_raw/03_daily_trading/TRD_Dalyr2(1).dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta source_row if source_id==12, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_r
+> aw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2.dta", all
+           Stkcd: match
+           Trddt: match
+        Dnshrtrd: match
+         Dsmvosd: match
+         Dsmvtll: match
+      Markettype: match
+          Trdsta: match
+
+. frame sourcecheck: count
+  899,885
+
+. post `checks' (12) ("01_raw/03_daily_trading/TRD_Dalyr2.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta source_row if source_id==13, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_r
+> aw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr3.dta", all
+           Stkcd: match
+           Trddt: match
+        Dnshrtrd: match
+         Dsmvosd: match
+         Dsmvtll: match
+      Markettype: match
+          Trdsta: match
+
+. frame sourcecheck: count
+  177,525
+
+. post `checks' (13) ("01_raw/03_daily_trading/TRD_Dalyr3.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. use "$OUT/capital_events_clean.dta", clear
+(CSMAR)
+
+. isid source_id source_row
+
+. frame put Stkcd Shrchgdt Shrtyp Nshrttl Nshra source_row if source_id==14, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Shrchgdt Shrtyp Nshrttl Nshra using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/
+> 01_raw/04_share_capital/TRD_Capchg.dta", all
+           Stkcd: match
+        Shrchgdt: match
+          Shrtyp: match
+         Nshrttl: match
+           Nshra: match
+
+. frame sourcecheck: count
+  71,837
+
+. post `checks' (14) ("01_raw/04_share_capital/TRD_Capchg.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. use "$OUT/company_snapshot_clean.dta", clear
+(CSMAR)
+
+. isid source_id source_row
+
+. frame put Stkcd Stknme Listdt Nnindcd Nnindnme PROVINCE PROVINCECODE Markettype source_row if source_id==15, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Stknme Listdt Nnindcd Nnindnme PROVINCE PROVINCECODE Markettype using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/pape
+> r_replication_raw_data_2026-10-21/01_raw/05_company_info/TRD_Co.dta", all
+           Stkcd: match
+          Stknme: match
+          Listdt: match
+         Nnindcd: match
+        Nnindnme: match
+        PROVINCE: match
+    PROVINCECODE: match
+      Markettype: match
+
+. frame sourcecheck: count
+  6,036
+
+. post `checks' (15) ("01_raw/05_company_info/TRD_Co.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. use "$OUT/shareholders_detail_clean.dta", clear
+(CSMAR)
+
+. isid source_id source_row
+
+. frame put Stkcd Reptdt S0301a S0306a S0304a source_row if source_id==19, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Reptdt S0301a S0306a S0304a using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01
+> _raw/08_shareholders/HLD_Shareholders.dta", all
+           Stkcd: match
+          Reptdt: match
+          S0301a: match
+          S0306a: match
+          S0304a: match
+
+. frame sourcecheck: count
+  1,000,000
+
+. post `checks' (19) ("01_raw/08_shareholders/HLD_Shareholders.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. frame put Stkcd Reptdt S0301a S0306a S0304a source_row if source_id==20, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Reptdt S0301a S0306a S0304a using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01
+> _raw/08_shareholders/HLD_Shareholders1.dta", all
+           Stkcd: match
+          Reptdt: match
+          S0301a: match
+          S0306a: match
+          S0304a: match
+
+. frame sourcecheck: count
+  118,356
+
+. post `checks' (20) ("01_raw/08_shareholders/HLD_Shareholders1.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. use "$OUT/audit_detail_clean.dta", clear
+(CSMAR)
+
+. isid source_id source_row
+
+. frame put Stkcd Stknme Accper Annodt Audittyp Dadtunit Iadtunit source_row if source_id==1, into(sourcecheck)
+
+. frame sourcecheck: sort source_row
+
+. frame sourcecheck: assert source_row==_n
+
+. frame sourcecheck: cf Stkcd Stknme Accper Annodt Audittyp Dadtunit Iadtunit using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_ra
+> w_data_2026-10-21/01_raw/010_fin_audit/FIN_Audit.dta", all
+           Stkcd: match
+          Stknme: match
+          Accper: match
+          Annodt: match
+        Audittyp: match
+        Dadtunit: match
+        Iadtunit: match
+
+. frame sourcecheck: count
+  36,297
+
+. post `checks' (1) ("01_raw/010_fin_audit/FIN_Audit.dta") (r(N)) (1)
+
+. frame drop sourcecheck
+
+. postclose `checks'
+
+. use "$OUT/source_verification.dta", clear
+
+. assert raw_values_match==1
+
+. assert _N==20
+
+. export delimited using "$OUT/source_verification.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/source_verification.csv saved
+
+. display "ALL_20_ORIGINAL_DATASETS_MATCH"
+ALL_20_ORIGINAL_DATASETS_MATCH
+
+. log close
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/verification.log
+  log type:  text
+ closed on:  27 Oct 2026, 22:34:02
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

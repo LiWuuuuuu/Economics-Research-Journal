@@ -1,0 +1,278 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/annual_master_verified.log
+  log type:  text
+ opened on:  27 Oct 2026, 22:39:49
+
+. use "$OUT/financial_panel_base.dta", clear
+(CSMAR)
+
+. local expected=_N
+
+. tempfile usingfile
+
+. * 各模块仅按唯一键连接，不因未匹配删除财务基础表记录。
+. preserve
+
+.     use "$OUT/stock_weekly_annual_coverage.dta", clear
+(CSMAR)
+
+.     isid Stkcd year
+
+.     save `usingfile'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38705.000001 saved as .dta format
+
+. restore
+
+. merge 1:1 Stkcd year using `usingfile', keep(master match) generate(merge_weekly)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         1,870
+        from master                     1,870  (merge_weekly==1)
+        from using                          0  (merge_weekly==2)
+
+    Matched                            36,052  (merge_weekly==3)
+    -----------------------------------------
+
+. tab merge_weekly
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+        Master only (1) |      1,870        4.93        4.93
+            Matched (3) |     36,052       95.07      100.00
+------------------------+-----------------------------------
+                  Total |     37,922      100.00
+
+. preserve
+
+.     use "$OUT/shareholders_annual.dta", clear
+(CSMAR)
+
+.     isid Stkcd year
+
+.     keep Stkcd year n_top10 n_top10_observed rank1_share sum_ranks2_10 sum_top10 n_over10 Disp_raw Disp_checked flag_incomplete_top10 flag_sum_over100 flag_zero_denominator
+
+.     save `usingfile', replace
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38705.000001 saved as .dta format
+
+. restore
+
+. merge 1:1 Stkcd year using `usingfile', keep(master match) generate(merge_shareholders)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         2,416
+        from master                     2,416  (merge_shareholders==1)
+        from using                          0  (merge_shareholders==2)
+
+    Matched                            35,506  (merge_shareholders==3)
+    -----------------------------------------
+
+. tab merge_shareholders
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+        Master only (1) |      2,416        6.37        6.37
+            Matched (3) |     35,506       93.63      100.00
+------------------------+-----------------------------------
+                  Total |     37,922      100.00
+
+. preserve
+
+.     use "$OUT/audit_annual.dta", clear
+(CSMAR)
+
+.     isid Stkcd year
+
+.     keep Stkcd year domestic_auditor_clean foreign_auditor_clean Big4_domestic Big4_any flag_big4_scope_difference
+
+.     save `usingfile', replace
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38705.000001 saved as .dta format
+
+. restore
+
+. merge 1:1 Stkcd year using `usingfile', keep(master match) generate(merge_audit)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         2,411
+        from master                     2,411  (merge_audit==1)
+        from using                          0  (merge_audit==2)
+
+    Matched                            35,511  (merge_audit==3)
+    -----------------------------------------
+
+. tab merge_audit
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+        Master only (1) |      2,411        6.36        6.36
+            Matched (3) |     35,511       93.64      100.00
+------------------------+-----------------------------------
+                  Total |     37,922      100.00
+
+. preserve
+
+.     use "$OUT/market_value_yearend.dta", clear
+(CSMAR)
+
+.     isid Stkcd year
+
+.     keep Stkcd year market_value_date Dsmvosd Dsmvtll Markettype market_value_yuan
+
+.     rename Markettype yearend_market_type
+
+.     save `usingfile', replace
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38705.000001 saved as .dta format
+
+. restore
+
+. merge 1:1 Stkcd year using `usingfile', keep(master match) generate(merge_marketvalue)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         1,870
+        from master                     1,870  (merge_marketvalue==1)
+        from using                          0  (merge_marketvalue==2)
+
+    Matched                            36,052  (merge_marketvalue==3)
+    -----------------------------------------
+
+. tab merge_marketvalue
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+        Master only (1) |      1,870        4.93        4.93
+            Matched (3) |     36,052       95.07      100.00
+------------------------+-----------------------------------
+                  Total |     37,922      100.00
+
+. preserve
+
+.     use "$OUT/trading_status_annual.dta", clear
+(CSMAR)
+
+.     isid Stkcd year
+
+.     keep Stkcd year n_daily_records n_ST_PT_days any_ST_PT_day flag_status_unknown
+
+.     save `usingfile', replace
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38705.000001 saved as .dta format
+
+. restore
+
+. merge 1:1 Stkcd year using `usingfile', keep(master match) generate(merge_tradingstatus)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         1,870
+        from master                     1,870  (merge_tradingstatus==1)
+        from using                          0  (merge_tradingstatus==2)
+
+    Matched                            36,052  (merge_tradingstatus==3)
+    -----------------------------------------
+
+. tab merge_tradingstatus
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+        Master only (1) |      1,870        4.93        4.93
+            Matched (3) |     36,052       95.07      100.00
+------------------------+-----------------------------------
+                  Total |     37,922      100.00
+
+. preserve
+
+.     use "$OUT/company_snapshot_clean.dta", clear
+(CSMAR)
+
+.     isid Stkcd
+
+.     keep Stkcd industry_snapshot province_snapshot province_code_snapshot list_date snapshot_financial snapshot_realestate
+
+.     rename list_date company_list_date
+
+.     save `usingfile', replace
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38705.000001 saved as .dta format
+
+. restore
+
+. merge m:1 Stkcd using `usingfile', keep(master match) generate(merge_company_snapshot)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                            37,922  (merge_company_snapshot==3)
+    -----------------------------------------
+
+. tab merge_company_snapshot
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+            Matched (3) |     37,922      100.00      100.00
+------------------------+-----------------------------------
+                  Total |     37,922      100.00
+
+. * 明确标记：行业和省份是当前截面，不是已核实的历史面板。
+. generate byte flag_hist_industry_unverified=1
+
+. generate byte flag_hist_province_unverified=1
+
+. * 市账比保留两个候选分母，均不冒充作者已确定口径。
+. generate double MB_parent_candidate=market_value_yuan/A003100000 if !missing(market_value_yuan,A003100000) & A003100000>0
+(3,740 missing values generated)
+
+. generate double MB_total_candidate=market_value_yuan/A003000000 if !missing(market_value_yuan,A003000000) & A003000000>0
+(3,736 missing values generated)
+
+. label variable MB_parent_candidate "Candidate: year-end A-share market value / parent equity"
+
+. label variable MB_total_candidate "Candidate: year-end A-share market value / total equity"
+
+. assert _N==`expected'
+
+. isid Stkcd year
+
+. sort Stkcd year
+
+. save "$OUT/annual_master_base.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/annual_master_base.dta saved
+
+. preserve
+
+.     keep Stkcd year merge_* flag_* explanatory_year
+
+.     export delimited using "$OUT/annual_master_coverage.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/annual_master_coverage.csv saved
+
+. restore
+
+. foreach v in merge_weekly merge_shareholders merge_audit merge_marketvalue merge_tradingstatus merge_company_snapshot {
+  2.     preserve
+  3.         contract year `v', freq(rows)
+  4.         export delimited using "$OUT/`v'_counts.csv"
+  5.     restore
+  6. }
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/merge_weekly_counts.csv saved
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/merge_shareholders_counts.csv saved
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/merge_audit_counts.csv saved
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/merge_marketvalue_counts.csv saved
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/merge_tradingstatus_counts.csv saved
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/merge_company_snapshot_counts.csv saved
+
+. display "ANNUAL_MASTER_BASE_COMPLETED"
+ANNUAL_MASTER_BASE_COMPLETED
+
+. log close
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/annual_master_verified.log
+  log type:  text
+ closed on:  27 Oct 2026, 22:39:50
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,2 +1,19 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+/02_data/raw/周个股回报率/TRD_Week.xlsx filter=lfs diff=lfs merge=lfs -text
+/02_data/raw/周个股回报率/TRD_Week1.xlsx filter=lfs diff=lfs merge=lfs -text
+/02_data/raw/周个股回报率/TRD_Week2.xlsx filter=lfs diff=lfs merge=lfs -text
+/06_废案/03_cleaning_all_20261027_01/run_01/daily_trading_clean.dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/03_cleaning_all_20261027_01/run_01/daily_turnover_base.dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/03_cleaning_all_20261027_01/run_01/shareholders_detail_clean.dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/03_cleaning_all_20261027_01/run_01/stock_weekly_clean.dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/03_cleaning_all_20261027_01/run_01/stock_weekly_usable.dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(2).dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(4).dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(5).dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1(2).dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1(3).dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1.dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2(1).dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2.dta filter=lfs diff=lfs merge=lfs -text
+/06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/08_shareholders/HLD_Shareholders.dta filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,1584 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/master.log
+  log type:  text
+ opened on:  27 Oct 2026, 22:19:42
+
+. tempname audit sources
+
+. postfile `audit' str32 table str80 metric double value using "$OUT/audit_metrics.dta"
+
+. postfile `sources' int source_id str160 relative_path long rows using "$OUT/source_rows.dta"
+
+. global AUDIT_HANDLE `audit'
+
+. global SOURCE_HANDLE `sources'
+
+. do 02_helpers.do
+
+. * 核查键，不自动删除重复或缺失的记录。
+. program define check_key
+  1.     syntax varlist
+  2.     generate byte flag_key_missing = 0
+  3.     foreach v of local varlist {
+  4.         replace flag_key_missing = 1 if missing(`v')
+  5.     }
+  6.     tempvar dup
+  7.     duplicates tag `varlist', generate(`dup')
+  8.     generate byte flag_duplicate_key = `dup'>0
+  9.     duplicates report `varlist'
+ 10. end
+
+. 
+. * 报告包括每个字段的Stata缺失、文本None/null等缺失标记及每个质量标记。
+. program define table_metrics
+  1.     syntax, Table(string) Fields(varlist)
+  2.     post $AUDIT_HANDLE ("`table'") ("rows") (_N)
+  3.     foreach v of local fields {
+  4.         quietly count if missing(`v')
+  5.         post $AUDIT_HANDLE ("`table'") ("missing:`v'") (r(N))
+  6.         capture confirm string variable `v'
+  7.         if !_rc {
+  8.             quietly count if inlist(ustrlower(ustrtrim(`v')),"none","null","nan","n/a")
+  9.             post $AUDIT_HANDLE ("`table'") ("text_missing_token:`v'") (r(N))
+ 10.         }
+ 11.     }
+ 12.     ds flag_*
+ 13.     foreach v of varlist `r(varlist)' {
+ 14.         quietly count if `v'==1
+ 15.         post $AUDIT_HANDLE ("`table'") ("`v'") (r(N))
+ 16.     }
+ 17.     capture confirm numeric variable year
+ 18.     if !_rc {
+ 19.         quietly summarize year
+ 20.         post $AUDIT_HANDLE ("`table'") ("year_min") (r(min))
+ 21.         post $AUDIT_HANDLE ("`table'") ("year_max") (r(max))
+ 22.         preserve
+ 23.             generate byte count_unit=1
+ 24.             collapse (sum) rows=count_unit flag_*, by(year)
+ 25.             export delimited using "$OUT/`table'_by_year.csv"
+ 26.         restore
+ 27.     }
+ 28. end
+
+. 
+. program define save_review
+  1.     args table
+  2.     egen byte flag_any=rowmax(flag_*)
+  3.     preserve
+  4.         keep if flag_any==1
+  5.         save "$OUT/`table'_review.dta"
+  6.     restore
+  7. end
+
+. 
+. program define datestring
+  1.     syntax varname, Generate(name)
+  2.     generate double `generate'=daily(`varlist',"YMD")
+  3.     format `generate' %tdCCYY-NN-DD
+  4. end
+
+. 
+end of do-file
+
+. do 03_financial.do
+
+. * 财务表：核查原始记录，再分流年度合并报表与其他口径。
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/06_balance_sheet/FS_Combas.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (17) ("01_raw/06_balance_sheet/FS_Combas.dta") (_N)
+
+. generate int source_id = 17
+
+. generate long source_row = _n
+
+. 
+. check_key Stkcd Accper Typrep
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd Accper Typrep
+
+Duplicates in terms of Stkcd Accper Typrep
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |       182596             0
+--------------------------------------
+
+. datestring Accper, generate(report_date)
+
+. generate int year=year(report_date)
+
+. generate byte flag_date_invalid=missing(report_date)
+
+. generate byte flag_report_type_unknown=!inlist(Typrep,"A","B")
+
+. generate byte flag_code_invalid=!regexm(Stkcd,"^[0-9][0-9][0-9][0-9][0-9][0-9]$")
+
+. generate byte annual_selected=Typrep=="A" & month(report_date)==12 & day(report_date)==31 & inrange(year,2006,2019)
+
+. 
+. generate byte flag_cash_missing=missing(A001101000)
+
+. generate byte flag_assets_missing=missing(A001000000)
+
+. generate byte flag_loan_missing=missing(A002101000)
+
+. generate byte flag_assets_nonpositive=A001000000<=0 if !missing(A001000000)
+
+. generate byte flag_cash_negative=A001101000<0 if !missing(A001101000)
+(455 missing values generated)
+
+. generate byte flag_loan_negative=A002101000<0 if !missing(A002101000)
+(12,899 missing values generated)
+
+. generate byte flag_cash_gt_assets=A001101000>A001000000 if !missing(A001101000,A001000000)
+(455 missing values generated)
+
+. generate byte flag_loan_gt_assets=A002101000>A001000000 if !missing(A002101000,A001000000)
+(12,899 missing values generated)
+
+. 
+. table_metrics, table(balance_raw) fields(Stkcd ShortName Accper Typrep A001101000 A001000000 A002101000)
+flag_key_m~g  flag_date_~d  flag_code_~d  flag_asset~g  flag_asset~e  flag_loan_~e  flag_loan_~s
+flag_dupli~y  flag_repor~n  flag_cash_~g  flag_loan_~g  flag_cash_~e  flag_cash_~s
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/balance_raw_by_year.csv saved
+
+. generate str64 exclusion_reason=""
+(182,596 missing values generated)
+
+. replace exclusion_reason="not consolidated" if Typrep!="A"
+(0 real changes made)
+
+. replace exclusion_reason="not December 31" if Typrep=="A" & !(month(report_date)==12 & day(report_date)==31)
+(144,674 real changes made)
+
+. replace exclusion_reason="invalid date" if missing(report_date)
+(0 real changes made)
+
+. replace exclusion_reason="outside 2006-2019" if !missing(report_date) & !inrange(year,2006,2019)
+(0 real changes made)
+
+. preserve
+
+.     keep if !annual_selected
+(37,922 observations deleted)
+
+.     save "$OUT/balance_other_records.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/balance_other_records.dta saved
+
+. restore
+
+. keep if annual_selected
+(144,674 observations deleted)
+
+. drop flag_key_missing flag_duplicate_key
+
+. check_key Stkcd year
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd year
+
+Duplicates in terms of Stkcd year
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        37922             0
+--------------------------------------
+
+. table_metrics, table(balance_annual) fields(Stkcd ShortName Accper Typrep A001101000 A001000000 A002101000)
+flag_date_~d  flag_code_~d  flag_asset~g  flag_asset~e  flag_loan_~e  flag_loan_~s  flag_dupli~y
+flag_repor~n  flag_cash_~g  flag_loan_~g  flag_cash_~e  flag_cash_~s  flag_key_m~g
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/balance_annual_by_year.csv saved
+
+. save_review balance_annual
+(34,973 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/balance_annual_review.dta saved
+
+. sort Stkcd year
+
+. save "$OUT/balance_annual.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/balance_annual.dta saved
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/06_balance_sheet/FS_Combas(1).dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (16) ("01_raw/06_balance_sheet/FS_Combas(1).dta") (_N)
+
+. generate int source_id = 16
+
+. generate long source_row = _n
+
+. 
+. check_key Stkcd Accper Typrep
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd Accper Typrep
+
+Duplicates in terms of Stkcd Accper Typrep
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |       360672             0
+--------------------------------------
+
+. datestring Accper, generate(report_date)
+
+. generate int year=year(report_date)
+
+. generate byte flag_date_invalid=missing(report_date)
+
+. generate byte flag_report_type_unknown=!inlist(Typrep,"A","B")
+
+. generate byte flag_code_invalid=!regexm(Stkcd,"^[0-9][0-9][0-9][0-9][0-9][0-9]$")
+
+. generate byte annual_selected=Typrep=="A" & month(report_date)==12 & day(report_date)==31 & inrange(year,2006,2019)
+
+. 
+. generate byte flag_parent_equity_missing=missing(A003100000)
+
+. generate byte flag_total_equity_missing=missing(A003000000)
+
+. generate byte flag_parent_equity_nonpositive=A003100000<=0 if !missing(A003100000)
+(66,384 missing values generated)
+
+. generate byte flag_total_equity_nonpositive=A003000000<=0 if !missing(A003000000)
+(9 missing values generated)
+
+. 
+. table_metrics, table(equity_raw) fields(Stkcd ShortName Accper Typrep A003100000 A003000000)
+flag_key_m~g  flag_dupli~y  flag_date_~d  flag_repor~n  flag_code_~d  flag_paren~g  flag_total~g  flag_paren~e  flag_total~e
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/equity_raw_by_year.csv saved
+
+. generate str64 exclusion_reason=""
+(360,672 missing values generated)
+
+. replace exclusion_reason="not consolidated" if Typrep!="A"
+(178,076 real changes made)
+
+. replace exclusion_reason="not December 31" if Typrep=="A" & !(month(report_date)==12 & day(report_date)==31)
+(144,674 real changes made)
+
+. replace exclusion_reason="invalid date" if missing(report_date)
+(0 real changes made)
+
+. replace exclusion_reason="outside 2006-2019" if !missing(report_date) & !inrange(year,2006,2019)
+(0 real changes made)
+
+. preserve
+
+.     keep if !annual_selected
+(37,922 observations deleted)
+
+.     save "$OUT/equity_other_records.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/equity_other_records.dta saved
+
+. restore
+
+. keep if annual_selected
+(322,750 observations deleted)
+
+. drop flag_key_missing flag_duplicate_key
+
+. check_key Stkcd year
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd year
+
+Duplicates in terms of Stkcd year
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        37922             0
+--------------------------------------
+
+. table_metrics, table(equity_annual) fields(Stkcd ShortName Accper Typrep A003100000 A003000000)
+flag_date_~d  flag_repor~n  flag_code_~d  flag_paren~g  flag_total~g  flag_paren~e  flag_total~e  flag_key_m~g  flag_dupli~y
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/equity_annual_by_year.csv saved
+
+. save_review equity_annual
+(37,388 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/equity_annual_review.dta saved
+
+. sort Stkcd year
+
+. save "$OUT/equity_annual.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/equity_annual.dta saved
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/07_income_statement/FS_Comins.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (18) ("01_raw/07_income_statement/FS_Comins.dta") (_N)
+
+. generate int source_id = 18
+
+. generate long source_row = _n
+
+. 
+. check_key Stkcd Accper Typrep
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd Accper Typrep
+
+Duplicates in terms of Stkcd Accper Typrep
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |       349277             0
+--------------------------------------
+
+. datestring Accper, generate(report_date)
+
+. generate int year=year(report_date)
+
+. generate byte flag_date_invalid=missing(report_date)
+
+. generate byte flag_report_type_unknown=!inlist(Typrep,"A","B")
+
+. generate byte flag_code_invalid=!regexm(Stkcd,"^[0-9][0-9][0-9][0-9][0-9][0-9]$")
+
+. generate byte annual_selected=Typrep=="A" & month(report_date)==12 & day(report_date)==31 & inrange(year,2006,2019)
+
+. 
+. generate byte flag_profit_missing=missing(B002000000)
+
+. * 净利润为负是亏损，不是数据错误，不因此筛除。
+. generate byte flag_profit_negative=B002000000<0 if !missing(B002000000)
+(10 missing values generated)
+
+. 
+. table_metrics, table(income_raw) fields(Stkcd ShortName Accper Typrep B002000000)
+flag_key_m~g  flag_dupli~y  flag_date_~d  flag_repor~n  flag_code_~d  flag_profi~g  flag_profi~e
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/income_raw_by_year.csv saved
+
+. generate str64 exclusion_reason=""
+(349,277 missing values generated)
+
+. replace exclusion_reason="not consolidated" if Typrep!="A"
+(172,602 real changes made)
+
+. replace exclusion_reason="not December 31" if Typrep=="A" & !(month(report_date)==12 & day(report_date)==31)
+(138,753 real changes made)
+
+. replace exclusion_reason="invalid date" if missing(report_date)
+(0 real changes made)
+
+. replace exclusion_reason="outside 2006-2019" if !missing(report_date) & !inrange(year,2006,2019)
+(0 real changes made)
+
+. preserve
+
+.     keep if !annual_selected
+(37,922 observations deleted)
+
+.     save "$OUT/income_other_records.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/income_other_records.dta saved
+
+. restore
+
+. keep if annual_selected
+(311,355 observations deleted)
+
+. drop flag_key_missing flag_duplicate_key
+
+. check_key Stkcd year
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd year
+
+Duplicates in terms of Stkcd year
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        37922             0
+--------------------------------------
+
+. table_metrics, table(income_annual) fields(Stkcd ShortName Accper Typrep B002000000)
+flag_date_~d  flag_repor~n  flag_code_~d  flag_profi~g  flag_profi~e  flag_key_m~g  flag_dupli~y
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/income_annual_by_year.csv saved
+
+. save_review income_annual
+(33,965 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/income_annual_review.dta saved
+
+. sort Stkcd year
+
+. save "$OUT/income_annual.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/income_annual.dta saved
+
+. 
+end of do-file
+
+. do 04_market_weekly.do
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/01_weekly_market/TRD_Weekm.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (2) ("01_raw/01_weekly_market/TRD_Weekm.dta") (_N)
+
+. generate int source_id = 2
+
+. generate long source_row = _n
+
+. 
+. check_key Markettype Trdwnt
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Markettype Trdwnt
+
+Duplicates in terms of Markettype Trdwnt
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |         3411             0
+--------------------------------------
+
+. generate int year=real(substr(Trdwnt,1,4))
+
+. generate byte week_number=real(substr(Trdwnt,6,2))
+
+. generate byte flag_week_invalid=!regexm(Trdwnt,"^[0-9][0-9][0-9][0-9]-[0-9][0-9]$") | !inrange(week_number,1,53)
+
+. generate byte flag_outside_window=!inrange(year,2006,2019)
+
+. generate byte flag_market_unknown=!inlist(Markettype,1,2,4,8,16,32,64)
+
+. generate byte flag_return_missing=missing(Wretwdeq) | missing(Wretwdos) | missing(Wretwdtl)
+
+. generate byte flag_return_below_minus1=(Wretwdeq< -1 | Wretwdos< -1 | Wretwdtl< -1)
+
+. generate byte is_A_market=inlist(Markettype,1,4,16,32,64)
+
+. table_metrics, table(market_weekly) fields(Markettype Trdwnt Wretwdeq Wretwdos Wretwdtl)
+flag_key_m~g  flag_dupli~y  flag_week_~d  flag_outsi~w  flag_marke~n  flag_retur~g  flag_retur~1
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/market_weekly_by_year.csv saved
+
+. save_review market_weekly
+(3,409 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/market_weekly_review.dta saved
+
+. sort Markettype Trdwnt
+
+. save "$OUT/market_weekly_clean.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/market_weekly_clean.dta saved
+
+. * 三个原始市场收益率口径均保留；不擅自指定作者采用何种加权法。
+. 
+end of do-file
+
+. do 05_stock_weekly.do
+
+. tempfile p0 p1
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/02_weekly_stock/TRD_Week.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (3) ("01_raw/02_weekly_stock/TRD_Week.dta") (_N)
+
+. generate int source_id = 3
+
+. generate long source_row = _n
+
+. save `p0'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000001 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/02_weekly_stock/TRD_Week1.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (4) ("01_raw/02_weekly_stock/TRD_Week1.dta") (_N)
+
+. generate int source_id = 4
+
+. generate long source_row = _n
+
+. save `p1'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000002 saved as .dta format
+
+. use `p0', clear
+(CSMAR)
+
+. append using `p1'
+
+. 
+. check_key Stkcd Trdwnt
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd Trdwnt
+
+Duplicates in terms of Stkcd Trdwnt
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |      1701727             0
+--------------------------------------
+
+. generate int year=real(substr(Trdwnt,1,4))
+
+. generate byte week_number=real(substr(Trdwnt,6,2))
+
+. datestring Clsdt, generate(close_date)
+
+. generate byte flag_week_invalid=!regexm(Trdwnt,"^[0-9][0-9][0-9][0-9]-[0-9][0-9]$") | !inrange(week_number,1,53)
+
+. generate byte flag_outside_window=!inrange(year,2006,2019)
+
+. generate byte flag_close_date_missing=missing(close_date)
+
+. generate byte flag_return_missing=missing(Wretwd)
+
+. generate byte flag_return_below_minus1=Wretwd< -1
+
+. generate byte flag_trading_days_invalid=missing(Ndaytrd) | Ndaytrd<0 | Ndaytrd>7 | Ndaytrd!=floor(Ndaytrd)
+
+. generate byte flag_no_trading=Ndaytrd==0
+
+. generate byte flag_market_unknown=!inlist(Markettype,1,2,4,8,16,32,64)
+
+. generate byte is_A_market=inlist(Markettype,1,4,16,32,64)
+
+. * 保留CSMAR周码作为键，不用Stata每年52周的周日期替代原周码。
+. generate byte usable_raw_return=!flag_key_missing & !flag_duplicate_key & !flag_week_invalid & !flag_outside_window & !flag_return_missing & !flag_return_below_minus1 & !flag_tra
+> ding_days_invalid & Ndaytrd>0
+
+. table_metrics, table(stock_weekly) fields(Stkcd Trdwnt Clsdt Ndaytrd Wretwd Markettype)
+flag_key_m~g  flag_dupli~y  flag_week_~d  flag_outsi~w  flag_close~g  flag_retur~g  flag_retur~1  flag_tradi~d  flag_no_tr~g  flag_marke~n
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/stock_weekly_by_year.csv saved
+
+. save_review stock_weekly
+(1,699,247 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/stock_weekly_review.dta saved
+
+. sort Stkcd year week_number
+
+. save "$OUT/stock_weekly_clean.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/stock_weekly_clean.dta saved
+
+. preserve
+
+.     keep if usable_raw_return
+(2,480 observations deleted)
+
+.     save "$OUT/stock_weekly_usable.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/stock_weekly_usable.dta saved
+
+. restore
+
+. * 年度有效原始周数用于覆盖诊断，不等同市场模型回归后的残差有效周数。
+. preserve
+
+.     generate double return_for_mean=Wretwd if usable_raw_return
+(2,480 missing values generated)
+
+.     generate byte row_count=1
+
+.     collapse (sum) n_raw_weeks=row_count n_usable_weeks=usable_raw_return (mean) mean_raw_weekly_return=return_for_mean, by(Stkcd year)
+
+.     generate byte flag_under30_rawweeks=n_usable_weeks<30
+
+.     isid Stkcd year
+
+.     save "$OUT/stock_weekly_annual_coverage.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/stock_weekly_annual_coverage.dta saved
+
+. restore
+
+. * 只验证精确市场×原周码的匹配覆盖，不估计崩盘风险。
+. preserve
+
+.     use "$OUT/market_weekly_clean.dta", clear
+(CSMAR)
+
+.     isid Markettype Trdwnt
+
+.     keep Markettype Trdwnt Wretwdeq Wretwdos Wretwdtl
+
+.     tempfile marketlookup
+
+.     save `marketlookup'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000006 saved as .dta format
+
+. restore
+
+. merge m:1 Markettype Trdwnt using `marketlookup', keep(master match) generate(market_merge)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                            42
+        from master                        42  (market_merge==1)
+        from using                          0  (market_merge==2)
+
+    Matched                         1,701,685  (market_merge==3)
+    -----------------------------------------
+
+. generate byte flag_market_unmatched=market_merge==1
+
+. count if flag_market_unmatched
+  42
+
+. post $AUDIT_HANDLE ("stock_weekly") ("flag_market_unmatched") (r(N))
+
+. keep if flag_market_unmatched
+(1,701,685 observations deleted)
+
+. save "$OUT/stock_market_unmatched.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/stock_market_unmatched.dta saved
+
+. 
+end of do-file
+
+. do 06_capital_company.do
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/04_share_capital/TRD_Capchg.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (14) ("01_raw/04_share_capital/TRD_Capchg.dta") (_N)
+
+. generate int source_id = 14
+
+. generate long source_row = _n
+
+. 
+. check_key Stkcd Shrchgdt
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd Shrchgdt
+
+Duplicates in terms of Stkcd Shrchgdt
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        71837             0
+--------------------------------------
+
+. datestring Shrchgdt, generate(cap_date)
+
+. generate int year=year(cap_date)
+
+. generate byte flag_date_invalid=missing(cap_date)
+
+. generate byte flag_total_shares_invalid=missing(Nshrttl) | Nshrttl<=0
+
+. generate byte flag_A_shares_missing=missing(Nshra)
+
+. generate byte flag_A_shares_nonpositive=Nshra<=0 if !missing(Nshra)
+
+. generate byte flag_A_shares_gt_total=Nshra>Nshrttl if !missing(Nshra,Nshrttl)
+
+. * 2006年前事件仍保留，用作2006年初流通股本的历史起点。
+. table_metrics, table(capital_events) fields(Stkcd Shrchgdt Shrtyp Nshrttl Nshra)
+flag_key_m~g  flag_dupli~y  flag_date_~d  flag_total~d  flag_A_sha~g  flag_A_sha~e  flag_A_sha~l
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/capital_events_by_year.csv saved
+
+. save_review capital_events
+(71,679 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/capital_events_review.dta saved
+
+. sort Stkcd cap_date
+
+. save "$OUT/capital_events_clean.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/capital_events_clean.dta saved
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/05_company_info/TRD_Co.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (15) ("01_raw/05_company_info/TRD_Co.dta") (_N)
+
+. generate int source_id = 15
+
+. generate long source_row = _n
+
+. 
+. check_key Stkcd
+(0 real changes made)
+
+Duplicates in terms of Stkcd
+
+Duplicates in terms of Stkcd
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |         6036             0
+--------------------------------------
+
+. datestring Listdt, generate(list_date)
+
+. generate str12 industry_snapshot=ustrtrim(Nnindcd)
+
+. generate str40 province_snapshot=ustrtrim(PROVINCE)
+
+. generate str12 province_code_snapshot=ustrtrim(PROVINCECODE)
+
+. foreach v in industry_snapshot province_snapshot province_code_snapshot {
+  2.     replace `v'="" if inlist(ustrlower(`v'),"none","null","nan","n/a")
+  3. }
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+. generate byte flag_listing_date_invalid=missing(list_date)
+
+. generate byte flag_listed_after2019=list_date>mdy(12,31,2019) if !missing(list_date)
+
+. generate byte flag_industry_missing=missing(industry_snapshot)
+
+. generate byte flag_province_missing=missing(province_snapshot) | missing(province_code_snapshot)
+
+. generate byte snapshot_financial=substr(industry_snapshot,1,1)=="J" if !missing(industry_snapshot)
+
+. generate byte snapshot_realestate=substr(industry_snapshot,1,1)=="K" if !missing(industry_snapshot)
+
+. generate byte is_A_market=inlist(Markettype,1,4,16,32,64)
+
+. label variable industry_snapshot "Current snapshot; NOT annual historical industry"
+
+. label variable province_snapshot "Current snapshot; NOT annual historical province"
+
+. table_metrics, table(company_snapshot) fields(Stkcd Stknme Listdt Nnindcd Nnindnme PROVINCE PROVINCECODE Markettype)
+flag_key_m~g  flag_dupli~y  flag_listi~d  flag_li~2019  flag_indus~g  flag_provi~g
+
+. save_review company_snapshot
+(3,988 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/company_snapshot_review.dta saved
+
+. sort Stkcd
+
+. save "$OUT/company_snapshot_clean.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/company_snapshot_clean.dta saved
+
+. 
+end of do-file
+
+. do 07_daily.do
+
+. tempfile p0 p1 p2 p3 p4 p5 p6 p7 p8
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(2).dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (5) ("01_raw/03_daily_trading/TRD_Dalyr(2).dta") (_N)
+
+. generate int source_id = 5
+
+. generate long source_row = _n
+
+. save `p0'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000001 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(4).dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (6) ("01_raw/03_daily_trading/TRD_Dalyr(4).dta") (_N)
+
+. generate int source_id = 6
+
+. generate long source_row = _n
+
+. save `p1'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000002 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr(5).dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (7) ("01_raw/03_daily_trading/TRD_Dalyr(5).dta") (_N)
+
+. generate int source_id = 7
+
+. generate long source_row = _n
+
+. save `p2'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000003 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1(2).dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (8) ("01_raw/03_daily_trading/TRD_Dalyr1(2).dta") (_N)
+
+. generate int source_id = 8
+
+. generate long source_row = _n
+
+. save `p3'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000004 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1(3).dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (9) ("01_raw/03_daily_trading/TRD_Dalyr1(3).dta") (_N)
+
+. generate int source_id = 9
+
+. generate long source_row = _n
+
+. save `p4'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000005 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr1.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (10) ("01_raw/03_daily_trading/TRD_Dalyr1.dta") (_N)
+
+. generate int source_id = 10
+
+. generate long source_row = _n
+
+. save `p5'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000006 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2(1).dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (11) ("01_raw/03_daily_trading/TRD_Dalyr2(1).dta") (_N)
+
+. generate int source_id = 11
+
+. generate long source_row = _n
+
+. save `p6'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000007 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (12) ("01_raw/03_daily_trading/TRD_Dalyr2.dta") (_N)
+
+. generate int source_id = 12
+
+. generate long source_row = _n
+
+. save `p7'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000008 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr3.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (13) ("01_raw/03_daily_trading/TRD_Dalyr3.dta") (_N)
+
+. generate int source_id = 13
+
+. generate long source_row = _n
+
+. save `p8'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000009 saved as .dta format
+
+. use `p0', clear
+(CSMAR)
+
+. append using `p1'
+
+. append using `p2'
+
+. append using `p3'
+
+. append using `p4'
+
+. append using `p5'
+
+. append using `p6'
+
+. append using `p7'
+
+. append using `p8'
+
+. 
+. check_key Stkcd Trddt
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd Trddt
+
+Duplicates in terms of Stkcd Trddt
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |      7983858             0
+--------------------------------------
+
+. datestring Trddt, generate(trade_date)
+
+. generate int year=year(trade_date)
+
+. generate int month=month(trade_date)
+
+. generate byte flag_date_invalid=missing(trade_date)
+
+. generate byte flag_outside_window=!inrange(year,2006,2019)
+
+. generate byte flag_volume_missing=missing(Dnshrtrd)
+
+. generate byte flag_volume_negative=Dnshrtrd<0
+
+. generate byte flag_float_mv_missing=missing(Dsmvosd)
+
+. generate byte flag_total_mv_missing=missing(Dsmvtll)
+
+. generate byte flag_float_mv_nonpositive=Dsmvosd<=0 if !missing(Dsmvosd)
+
+. generate byte flag_total_mv_nonpositive=Dsmvtll<=0 if !missing(Dsmvtll)
+
+. generate byte flag_float_mv_gt_total=Dsmvosd>Dsmvtll if !missing(Dsmvosd,Dsmvtll)
+
+. generate byte flag_status_unknown=!inrange(Trdsta,1,16) | Trdsta!=floor(Trdsta)
+
+. generate byte flag_market_unknown=!inlist(Markettype,1,2,4,8,16,32,64)
+
+. generate byte is_A_market=inlist(Markettype,1,4,16,32,64)
+
+. * 单位保留原始千元；本次不把B股外币市值混作人民币市值。
+. generate byte is_ST_PT_day=inlist(Trdsta,2,3,5,6,8,9,11,12,14,15,16)
+
+. table_metrics, table(daily_trading) fields(Stkcd Trddt Dnshrtrd Dsmvosd Dsmvtll Markettype Trdsta)
+flag_key_m~g  flag_date_~d  flag_volum~g  flag_float~g  flag_float~e  flag_float~l  flag_marke~n
+flag_dupli~y  flag_outsi~w  flag_volum~e  flag_total~g  flag_total~e  flag_statu~n
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/daily_trading_by_year.csv saved
+
+. save_review daily_trading
+(7,983,858 observations deleted)
+(dataset contains 0 observations)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/daily_trading_review.dta saved
+
+. sort Stkcd trade_date
+
+. save "$OUT/daily_trading_clean.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/daily_trading_clean.dta saved
+
+. * 年内是否出现ST/PT只生成诊断指标；不在清洗阶段决定整年剔除口径。
+. preserve
+
+.     generate byte count_unit=1
+
+.     collapse (sum) n_daily_records=count_unit n_ST_PT_days=is_ST_PT_day (max) any_ST_PT_day=is_ST_PT_day flag_status_unknown, by(Stkcd year)
+
+.     isid Stkcd year
+
+.     save "$OUT/trading_status_annual.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/trading_status_annual.dta saved
+
+. restore
+
+. * 年末最近交易日原始市值，不对缺失值向更早日期回填。
+. preserve
+
+.     keep if !flag_key_missing & !flag_duplicate_key & !flag_date_invalid & !flag_outside_window
+(0 observations deleted)
+
+.     sort Stkcd year trade_date
+
+.     by Stkcd year: keep if _n==_N
+(7,947,718 observations deleted)
+
+.     keep Stkcd year Trddt Dsmvosd Dsmvtll Markettype source_id source_row
+
+.     rename Trddt market_value_date
+
+.     generate double market_value_yuan=Dsmvtll*1000 if inlist(Markettype,1,4,16,32,64)
+(1,463 missing values generated)
+
+.     isid Stkcd year
+
+.     save "$OUT/market_value_yearend.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/market_value_yearend.dta saved
+
+. restore
+
+. * 将股本事件向后匹配到交易日，绝不使用未来股本。
+. preserve
+
+.     use "$OUT/capital_events_clean.dta", clear
+(CSMAR)
+
+.     isid Stkcd cap_date
+
+.     keep if !flag_date_invalid & !flag_duplicate_key & !flag_key_missing
+(0 observations deleted)
+
+.     keep Stkcd cap_date Nshra Nshrttl source_id source_row
+
+.     rename source_id cap_source_id
+
+.     rename source_row cap_source_row
+
+.     rename Nshra shares_A_asof
+
+.     rename Nshrttl shares_total_asof
+
+.     generate double event_date=cap_date
+
+.     generate byte capital_event=1
+
+.     tempfile capital_timeline
+
+.     save `capital_timeline'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.00000d saved as .dta format
+
+. restore
+
+. generate double event_date=trade_date
+
+. generate byte capital_event=0
+
+. append using `capital_timeline'
+
+. gsort Stkcd event_date -capital_event
+
+. foreach v in shares_A_asof shares_total_asof cap_date cap_source_id cap_source_row {
+  2.     by Stkcd: replace `v'=`v'[_n-1] if capital_event==0
+  3. }
+(7982714 real changes made)
+(7982714 real changes made)
+(7982714 real changes made)
+(7,982,714 real changes made)
+(7,982,714 real changes made)
+
+. keep if capital_event==0
+(71,837 observations deleted)
+
+. assert cap_date<=trade_date if !missing(cap_date,trade_date)
+
+. generate byte flag_shares_history_missing=missing(cap_date) | missing(shares_A_asof)
+
+. generate byte flag_shares_zero_or_negative=shares_A_asof<=0 if !missing(shares_A_asof)
+(1,144 missing values generated)
+
+. generate double turnover_daily=Dnshrtrd/shares_A_asof if is_A_market & !missing(Dnshrtrd,shares_A_asof) & Dnshrtrd>=0 & shares_A_asof>0 & !flag_duplicate_key & !flag_date_invalid
+(337,942 missing values generated)
+
+. generate byte flag_turnover_gt1=turnover_daily>1 if !missing(turnover_daily)
+(337,942 missing values generated)
+
+. label variable turnover_daily "Daily volume / latest available A float shares; same-day event applied"
+
+. foreach v in flag_shares_history_missing flag_shares_zero_or_negative flag_turnover_gt1 {
+  2.     count if `v'==1
+  3.     post $AUDIT_HANDLE ("daily_turnover") ("`v'") (r(N))
+  4. }
+  1,144
+  64,287
+  0
+
+. count if missing(turnover_daily)
+  337,942
+
+. post $AUDIT_HANDLE ("daily_turnover") ("missing:turnover_daily") (r(N))
+
+. drop event_date capital_event
+
+. sort Stkcd trade_date
+
+. save "$OUT/daily_turnover_base.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/daily_turnover_base.dta saved
+
+. generate byte count_unit=1
+
+. generate byte turnover_observed=!missing(turnover_daily)
+
+. collapse (sum) n_days=count_unit n_turnover_days=turnover_observed (mean) turnover_month_mean=turnover_daily, by(Stkcd year month)
+
+. generate byte flag_incomplete_turnover_month=n_turnover_days<n_days
+
+. * 完整日数据才给出可供后续使用的月均换手率，部分数据均值保留为诊断。
+. generate double turnover_month_complete=turnover_month_mean if !flag_incomplete_turnover_month
+(17,027 missing values generated)
+
+. isid Stkcd year month
+
+. save "$OUT/turnover_monthly_base.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/turnover_monthly_base.dta saved
+
+. 
+end of do-file
+
+. do 08_shareholders.do
+
+. tempfile p0 p1
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/08_shareholders/HLD_Shareholders.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (19) ("01_raw/08_shareholders/HLD_Shareholders.dta") (_N)
+
+. generate int source_id = 19
+
+. generate long source_row = _n
+
+. save `p0'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000001 saved as .dta format
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/08_shareholders/HLD_Shareholders1.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (20) ("01_raw/08_shareholders/HLD_Shareholders1.dta") (_N)
+
+. generate int source_id = 20
+
+. generate long source_row = _n
+
+. save `p1'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000002 saved as .dta format
+
+. use `p0', clear
+(CSMAR)
+
+. append using `p1'
+
+. 
+. check_key Stkcd Reptdt S0306a
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd Reptdt S0306a
+
+Duplicates in terms of Stkcd Reptdt S0306a
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |      1118356             0
+--------------------------------------
+
+. datestring Reptdt, generate(report_date)
+
+. generate int year=year(report_date)
+
+. generate byte flag_date_invalid=missing(report_date)
+
+. generate byte flag_outside_window=!inrange(year,2006,2019)
+
+. generate byte flag_rank_invalid=missing(S0306a) | S0306a<1 | S0306a!=floor(S0306a)
+
+. generate byte flag_rank_over10=S0306a>10 if !missing(S0306a)
+
+. generate byte flag_pct_missing=missing(S0304a)
+
+. generate byte flag_pct_outside=(!inrange(S0304a,0,100)) if !missing(S0304a)
+
+. generate byte flag_pct_zero=S0304a==0
+
+. generate str200 holder_name_clean=ustrtrim(S0301a)
+
+. generate byte flag_holder_missing=inlist(ustrlower(holder_name_clean),"","none","null","nan","n/a")
+
+. table_metrics, table(shareholders_detail) fields(Stkcd Reptdt S0301a S0306a S0304a)
+flag_key_m~g  flag_dupli~y  flag_date_~d  flag_outsi~w  flag_rank_~d  flag_rank~10  flag_pct_m~g  flag_pct_o~e  flag_pct_z~o  flag_holde~g
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/shareholders_detail_by_year.csv saved
+
+. save_review shareholders_detail
+(1,108,958 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/shareholders_detail_review.dta saved
+
+. sort Stkcd report_date S0306a
+
+. save "$OUT/shareholders_detail_clean.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/shareholders_detail_clean.dta saved
+
+. * 原始明细完整保留，年度聚合仅对12月31日报告期计算。
+. keep if month(report_date)==12 & day(report_date)==31 & inrange(year,2006,2019)
+(761,055 observations deleted)
+
+. generate byte in_top10=inrange(S0306a,1,10)
+
+. generate byte top10_observed=in_top10 & !missing(S0304a)
+
+. generate byte rank1_observed=S0306a==1 & !missing(S0304a)
+
+. generate double rank1_pct=S0304a if S0306a==1
+(321,794 missing values generated)
+
+. generate double ranks2_10_pct=S0304a if inrange(S0306a,2,10)
+(38,411 missing values generated)
+
+. generate double top10_pct=S0304a if in_top10
+(2,904 missing values generated)
+
+. generate byte count_unit=1
+
+. collapse (sum) n_detail_rows=count_unit n_top10=in_top10 n_top10_observed=top10_observed n_rank1=rank1_observed sum_ranks2_10=ranks2_10_pct sum_top10=top10_pct n_over10=flag_rank
+> _over10 (max) rank1_share=rank1_pct flag_duplicate_key flag_rank_invalid flag_pct_missing flag_pct_outside flag_holder_missing, by(Stkcd year Reptdt)
+
+. generate byte flag_incomplete_top10=n_top10!=10 | n_top10_observed!=10 | n_rank1!=1 | flag_duplicate_key
+
+. generate byte flag_sum_over100=sum_top10>100.0000001
+
+. generate byte flag_zero_denominator=sum_ranks2_10<=0
+
+. generate double Disp_raw=rank1_share/sum_ranks2_10 if !flag_incomplete_top10 & sum_ranks2_10>0
+(179 missing values generated)
+
+. generate double Disp_checked=Disp_raw if !flag_sum_over100 & !flag_pct_outside & !flag_rank_invalid
+(184 missing values generated)
+
+. label variable Disp_checked "Rank1 / sum ranks2-10; incomplete/invalid groups set missing; project rule"
+
+. table_metrics, table(shareholders_annual) fields(Stkcd year Reptdt rank1_share sum_ranks2_10 sum_top10 Disp_raw Disp_checked)
+flag_dupli~y  flag_rank_~d  flag_pct_m~g  flag_pct_o~e  flag_holde~g  flag_inco~10  flag_sum~100  flag_zero_~r
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/shareholders_annual_by_year.csv saved
+
+. save_review shareholders_annual
+(35,323 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/shareholders_annual_review.dta saved
+
+. isid Stkcd year
+
+. save "$OUT/shareholders_annual.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/shareholders_annual.dta saved
+
+. 
+end of do-file
+
+. do 09_audit.do
+
+. use "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/010_fin_audit/FIN_Audit.dta", clear
+(CSMAR)
+
+. post $SOURCE_HANDLE (1) ("01_raw/010_fin_audit/FIN_Audit.dta") (_N)
+
+. generate int source_id = 1
+
+. generate long source_row = _n
+
+. 
+. check_key Stkcd Accper
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd Accper
+
+Duplicates in terms of Stkcd Accper
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        36297             0
+--------------------------------------
+
+. datestring Accper, generate(report_date)
+
+. datestring Annodt, generate(audit_date)
+(192 missing values generated)
+
+. generate int year=year(report_date)
+
+. generate byte flag_date_invalid=missing(report_date)
+
+. generate byte flag_audit_date_invalid=missing(audit_date)
+
+. generate str200 domestic_auditor_clean=ustrtrim(Dadtunit)
+
+. generate str200 foreign_auditor_clean=ustrtrim(Iadtunit)
+
+. foreach v in domestic_auditor_clean foreign_auditor_clean {
+  2.     replace `v'="" if inlist(ustrlower(`v'),"none","null","nan","n/a")
+  3. }
+(0 real changes made)
+(35,030 real changes made)
+
+. generate byte flag_domestic_auditor_missing=missing(domestic_auditor_clean)
+
+. generate byte flag_foreign_auditor_missing=missing(foreign_auditor_clean)
+
+. * 四大名称匹配可供复核，境内与境内外任一家两种口径分别输出。
+. generate byte Big4_domestic=ustrregexm(ustrlower(domestic_auditor_clean),"普华永道|安永|德勤|毕马威|pricewaterhouse|ernst.*young|deloitte|kpmg") if !missing(domestic_auditor_clea
+> n)
+
+. generate byte Big4_foreign=ustrregexm(ustrlower(foreign_auditor_clean),"普华永道|安永|德勤|毕马威|pricewaterhouse|ernst.*young|deloitte|kpmg") if !missing(foreign_auditor_clean)
+(35,030 missing values generated)
+
+. generate byte Big4_any=1 if Big4_domestic==1 | Big4_foreign==1
+(33,832 missing values generated)
+
+. replace Big4_any=0 if missing(Big4_any) & (!missing(Big4_domestic) | !missing(Big4_foreign))
+(33,832 real changes made)
+
+. generate byte flag_big4_scope_difference=Big4_any!=Big4_domestic if !missing(Big4_any,Big4_domestic)
+
+. table_metrics, table(audit_detail) fields(Stkcd Stknme Accper Annodt Audittyp Dadtunit Iadtunit)
+flag_key_m~g  flag_dupli~y  flag_date_~d  flag_audit~d  flag_domes~g  flag_forei~g  flag_big4_~e
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/audit_detail_by_year.csv saved
+
+. save_review audit_detail
+(1,134 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/audit_detail_review.dta saved
+
+. save "$OUT/audit_detail_clean.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/audit_detail_clean.dta saved
+
+. preserve
+
+.     contract domestic_auditor_clean foreign_auditor_clean Big4_domestic Big4_foreign Big4_any, freq(rows)
+
+.     export delimited using "$OUT/auditor_name_mapping.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/auditor_name_mapping.csv saved
+
+. restore
+
+. preserve
+
+.     keep if !(month(report_date)==12 & day(report_date)==31 & inrange(year,2006,2019))
+(35,511 observations deleted)
+
+.     save "$OUT/audit_other_records.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/audit_other_records.dta saved
+
+. restore
+
+. keep if month(report_date)==12 & day(report_date)==31 & inrange(year,2006,2019)
+(786 observations deleted)
+
+. table_metrics, table(audit_annual) fields(Stkcd year Accper Dadtunit Iadtunit Big4_domestic Big4_any)
+flag_key_m~g  flag_dupli~y  flag_date_~d  flag_audit~d  flag_domes~g  flag_forei~g  flag_big4_~e  flag_any
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/audit_annual_by_year.csv saved
+
+. isid Stkcd year
+
+. sort Stkcd year
+
+. save "$OUT/audit_annual.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/audit_annual.dta saved
+
+. 
+end of do-file
+
+. do 10_financial_panel.do
+
+. * 财务三表仅做外连接，保留未匹配公司—年度，不提前做完整样本删除。
+. use "$OUT/balance_annual.dta", clear
+(CSMAR)
+
+. isid Stkcd year
+
+. keep Stkcd year Accper A001101000 A001000000 A002101000 source_id source_row
+
+. rename source_id balance_source_id
+
+. rename source_row balance_source_row
+
+. rename Accper balance_Accper
+
+. tempfile eq inc
+
+. preserve
+
+.     use "$OUT/equity_annual.dta", clear
+(CSMAR)
+
+.     isid Stkcd year
+
+.     keep Stkcd year Accper A003100000 A003000000 source_id source_row
+
+.     rename source_id equity_source_id
+
+.     rename source_row equity_source_row
+
+.     rename Accper equity_Accper
+
+.     save `eq'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000001 saved as .dta format
+
+. restore
+
+. merge 1:1 Stkcd year using `eq', generate(merge_equity)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                            37,922  (merge_equity==3)
+    -----------------------------------------
+
+. tab merge_equity
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+            Matched (3) |     37,922      100.00      100.00
+------------------------+-----------------------------------
+                  Total |     37,922      100.00
+
+. preserve
+
+.     use "$OUT/income_annual.dta", clear
+(CSMAR)
+
+.     isid Stkcd year
+
+.     keep Stkcd year Accper B002000000 source_id source_row
+
+.     rename source_id income_source_id
+
+.     rename source_row income_source_row
+
+.     rename Accper income_Accper
+
+.     save `inc'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38099.000002 saved as .dta format
+
+. restore
+
+. merge 1:1 Stkcd year using `inc', generate(merge_income)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                            37,922  (merge_income==3)
+    -----------------------------------------
+
+. tab merge_income
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+            Matched (3) |     37,922      100.00      100.00
+------------------------+-----------------------------------
+                  Total |     37,922      100.00
+
+. generate byte flag_balance_absent=missing(balance_source_id)
+
+. generate byte flag_equity_absent=missing(equity_source_id)
+
+. generate byte flag_income_absent=missing(income_source_id)
+
+. generate byte flag_assets_invalid=missing(A001000000) | A001000000<=0
+
+. generate byte flag_loan_missing=missing(A002101000)
+
+. generate byte flag_cash_missing=missing(A001101000)
+
+. * 只生成已知公式的基础量，不估算DH，不做行业均值或连续年判断。
+. generate double CashRatio=A001101000/A001000000 if A001000000>0 & !missing(A001000000,A001101000)
+(101 missing values generated)
+
+. generate double LoanRatio=A002101000/A001000000 if A001000000>0 & !missing(A001000000,A002101000)
+(2,860 missing values generated)
+
+. generate double Size=ln(A001000000) if A001000000>0 & !missing(A001000000)
+(3 missing values generated)
+
+. generate double ROA=B002000000/A001000000 if A001000000>0 & !missing(A001000000,B002000000)
+(3 missing values generated)
+
+. sort Stkcd year
+
+. by Stkcd: generate double lag_assets=A001000000[_n-1] if year==year[_n-1]+1
+(4,218 missing values generated)
+
+. generate double GROWTH=(A001000000-lag_assets)/lag_assets if lag_assets>0 & !missing(lag_assets,A001000000)
+(4,221 missing values generated)
+
+. generate byte flag_growth_unavailable=missing(GROWTH)
+
+. generate byte explanatory_year=inrange(year,2007,2018)
+
+. table_metrics, table(financial_panel) fields(Stkcd year A001101000 A001000000 A002101000 A003100000 A003000000 B002000000 CashRatio LoanRatio Size ROA GROWTH)
+flag_balan~t  flag_equit~t  flag_incom~t  flag_asset~d  flag_loan_~g  flag_cash_~g  flag_growt~e
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/financial_panel_by_year.csv saved
+
+. save_review financial_panel
+(31,170 observations deleted)
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/financial_panel_review.dta saved
+
+. isid Stkcd year
+
+. save "$OUT/financial_panel_base.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/financial_panel_base.dta saved
+
+. 
+end of do-file
+
+. do 11_excel_reference.do
+
+. * Excel仅为最初下载测试表，单独核查，不与正式dta重复合并。
+. import excel using "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/raw/paper_replication_raw_data_2026-10-21/01_raw/09_original_download_test/FS_Combas.xl
+> sx", firstrow allstring clear
+(4 vars, 102,241 obs)
+
+. generate long source_row=_n+1
+
+. generate byte flag_code_invalid=!regexm(Stkcd,"^[0-9][0-9][0-9][0-9][0-9][0-9]$")
+
+. datestring Accper, generate(report_date)
+(2 missing values generated)
+
+. generate int year=year(report_date)
+(2 missing values generated)
+
+. generate byte flag_date_invalid=missing(report_date)
+
+. table_metrics, table(excel_reference) fields(Stkcd ShortName Accper Typrep)
+flag_code_~d  flag_date_~d
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/excel_reference_by_year.csv saved
+
+. save "$OUT/excel_reference_imported.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/excel_reference_imported.dta saved
+
+. keep if !flag_code_invalid & !flag_date_invalid
+(2 observations deleted)
+
+. check_key Stkcd Accper Typrep
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+Duplicates in terms of Stkcd Accper Typrep
+
+Duplicates in terms of Stkcd Accper Typrep
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |       102239             0
+--------------------------------------
+
+. save "$OUT/excel_reference_valid_keys.dta"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/excel_reference_valid_keys.dta saved
+
+. 
+end of do-file
+
+. postclose `audit'
+
+. postclose `sources'
+
+. use "$OUT/audit_metrics.dta", clear
+
+. export delimited using "$OUT/audit_metrics.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/audit_metrics.csv saved
+
+. use "$OUT/source_rows.dta", clear
+
+. isid source_id
+
+. export delimited using "$OUT/source_rows.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/source_rows.csv saved
+
+. display "ALL_TABLES_CLEANING_COMPLETED"
+ALL_TABLES_CLEANING_COMPLETED
+
+. log close
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/master.log
+  log type:  text
+ closed on:  27 Oct 2026, 22:22:36
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

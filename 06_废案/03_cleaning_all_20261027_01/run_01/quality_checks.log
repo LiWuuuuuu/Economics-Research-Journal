@@ -1,0 +1,205 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/quality_checks.log
+  log type:  text
+ opened on:  27 Oct 2026, 22:37:41
+
+. use "$OUT/stock_market_unmatched.dta", clear
+(CSMAR)
+
+. contract Markettype year Trdwnt, freq(stock_rows)
+
+. list, noobs
+
+  +--------------------------------------+
+  | Trdwnt    Market~e   year   stock_~s |
+  |--------------------------------------|
+  | 2016-38          8   2016         42 |
+  +--------------------------------------+
+
+. export delimited using "$OUT/stock_market_unmatched_summary.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/stock_market_unmatched_summary.csv saved
+
+. use "$OUT/market_weekly_clean.dta", clear
+(CSMAR)
+
+. keep if flag_return_missing
+(3,409 observations deleted)
+
+. list Markettype Trdwnt Wretwdeq Wretwdos Wretwdtl, noobs
+
+  +-----------------------------------------------------+
+  | Market~e   Trdwnt    Wretwdeq   Wretwdos   Wretwdtl |
+  |-----------------------------------------------------|
+  |       16   2009-44          .          .          . |
+  |       32   2019-30          .          .          . |
+  +-----------------------------------------------------+
+
+. export delimited using "$OUT/market_missing_returns.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/market_missing_returns.csv saved
+
+. use "$OUT/capital_events_clean.dta", clear
+(CSMAR)
+
+. isid Stkcd cap_date
+
+. sort Stkcd cap_date
+
+. by Stkcd: gen double next_cap_date=cap_date[_n+1]
+(3,989 missing values generated)
+
+. keep Stkcd cap_date next_cap_date Nshra Nshrttl
+
+. rename Nshra verify_shares_A
+
+. rename Nshrttl verify_shares_total
+
+. tempfile capcheck
+
+. save `capcheck'
+file /var/folders/jy/nlq7c0717_g4pdyyyn2bnkyr0000gn/T//St38633.000001 saved as .dta format
+
+. use "$OUT/daily_turnover_base.dta", clear
+(CSMAR)
+
+. merge m:1 Stkcd cap_date using `capcheck', keep(master match) generate(capcheck_match)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         1,144
+        from master                     1,144  (capcheck_match==1)
+        from using                          0  (capcheck_match==2)
+
+    Matched                         7,982,714  (capcheck_match==3)
+    -----------------------------------------
+
+. assert capcheck_match==3 if !missing(cap_date)
+
+. assert shares_A_asof==verify_shares_A if !missing(cap_date)
+
+. assert shares_total_asof==verify_shares_total if !missing(cap_date)
+
+. assert cap_date<=trade_date if !missing(cap_date,trade_date)
+
+. assert trade_date<next_cap_date if !missing(next_cap_date,trade_date)
+
+. assert abs(turnover_daily-Dnshrtrd/shares_A_asof)<1e-12 if !missing(turnover_daily)
+
+. count if turnover_daily>1 & !missing(turnover_daily)
+  0
+
+. count if missing(cap_date)
+  1,144
+
+. count if shares_A_asof==0
+  64,287
+
+. * 汇总未能计算换手率的原因。不同原因可能重叠。
+. gen byte B_or_other_market=!is_A_market
+
+. gen byte no_capital_history=missing(cap_date)
+
+. gen byte nonpositive_A_shares=shares_A_asof<=0 if !missing(shares_A_asof)
+(1,144 missing values generated)
+
+. gen byte turnover_missing=missing(turnover_daily)
+
+. gen byte counter=1
+
+. collapse (sum) rows=counter B_or_other_market no_capital_history nonpositive_A_shares turnover_missing, by(year)
+
+. export delimited using "$OUT/turnover_missing_by_year.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/turnover_missing_by_year.csv saved
+
+. use "$OUT/shareholders_annual.dta", clear
+(CSMAR)
+
+. count if flag_incomplete_top10
+  179
+
+. count if flag_sum_over100
+  16
+
+. count if flag_zero_denominator
+  3
+
+. count if missing(Disp_checked)
+  184
+
+. list Stkcd year n_top10 n_top10_observed sum_ranks2_10 if flag_zero_denominator, noobs
+
+  +-----------------------------------------------+
+  | Stkcd    year   n_top10   n_top1~d   sum_r~10 |
+  |-----------------------------------------------|
+  | 000799   2012         1          1          0 |
+  | 601186   2007         1          1          0 |
+  | 688396   2019         1          1          0 |
+  +-----------------------------------------------+
+
+. use "$OUT/audit_annual.dta", clear
+(CSMAR)
+
+. tab Big4_domestic Big4_any, missing
+
+Big4_domes |       Big4_any
+       tic |         0          1 |     Total
+-----------+----------------------+----------
+         0 |    33,097        120 |    33,217 
+         1 |         0      2,294 |     2,294 
+-----------+----------------------+----------
+     Total |    33,097      2,414 |    35,511 
+
+. preserve
+
+.     contract year Big4_domestic Big4_any, freq(rows)
+
+.     export delimited using "$OUT/big4_counts_by_year.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/big4_counts_by_year.csv saved
+
+. restore
+
+. keep if flag_big4_scope_difference==1
+(35,391 observations deleted)
+
+. export delimited using "$OUT/big4_scope_differences.csv"
+file /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/big4_scope_differences.csv saved
+
+. * 基础财务面板合并完整性与连续年份约束。
+. use "$OUT/financial_panel_base.dta", clear
+(CSMAR)
+
+. isid Stkcd year
+
+. assert !flag_balance_absent & !flag_equity_absent & !flag_income_absent
+
+. assert CashRatio==A001101000/A001000000 if !missing(CashRatio)
+
+. assert LoanRatio==A002101000/A001000000 if !missing(LoanRatio)
+
+. assert ROA==B002000000/A001000000 if !missing(ROA)
+
+. assert Size==ln(A001000000) if !missing(Size)
+
+. sort Stkcd year
+
+. by Stkcd: assert year==year[_n-1]+1 if !missing(GROWTH)
+
+. assert GROWTH==(A001000000-lag_assets)/lag_assets if !missing(GROWTH)
+
+. count if inrange(year,2007,2018)
+  32,240
+
+. use "$OUT/excel_reference_valid_keys.dta", clear
+
+. count
+  102,239
+
+. count if flag_duplicate_key
+  0
+
+. log close
+      name:  <unnamed>
+       log:  /Users/duantianhai/Documents/ChatGPT/论文/all_tables_clean_20261027_01/run_01/quality_checks.log
+  log type:  text
+ closed on:  27 Oct 2026, 22:37:54
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
