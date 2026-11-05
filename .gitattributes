@@ -17,3 +17,4 @@
 /06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2(1).dta filter=lfs diff=lfs merge=lfs -text
 /06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/03_daily_trading/TRD_Dalyr2.dta filter=lfs diff=lfs merge=lfs -text
 /06_废案/raw/paper_replication_raw_data_2026-10-21/01_raw/08_shareholders/HLD_Shareholders.dta filter=lfs diff=lfs merge=lfs -text
+/02_data/raw/周个股回报率/TRD_Week3.xlsx filter=lfs diff=lfs merge=lfs -text

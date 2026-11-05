@@ -1,0 +1,103 @@
+* ==================================================
+* 第8步：构造存贷双高指标 DH
+* ==================================================
+cd "/Users/duantianhai/Documents/GitHub/Economics-Research-Journal/02_data/clean"
+*读取资产负债表
+use "资产负债表clean.dta", clear
+*检查公司—年份唯一性
+isid stock year
+*合并历史行业数据，保留匹配记录
+merge 1:1 stock year using "公司行业代码_清洗完成.dta", keep(match) nogen
+count
+isid stock year
+*构造现金与短期借款占比
+gen double cash_ratio = cash / total_assets if !missing(cash, total_assets) & total_assets > 0
+gen double debt_ratio = short_debt / total_assets if !missing(short_debt, total_assets) & total_assets > 0
+*检查计算结果
+summarize cash_ratio debt_ratio, detail
+* 计算行业—年度平均水平
+* 统一行业代码格式
+replace indcode = upper(strtrim(indcode))
+* 生成行业分组
+* 非制造业暂按首位字母划分
+gen str3 industry = substr(indcode, 1, 1)
+* 制造业暂按三位行业代码划分
+replace industry = substr(indcode, 1, 3) if substr(indcode, 1, 1) == "C"
+* 处理行业代码缺失
+replace industry = "" if missing(indcode)
+* 计算同行业、同年度的平均现金比率
+bysort industry year: egen double industry_cash_mean = mean(cash_ratio)
+* 计算同行业、同年度的平均短期借款比率
+bysort industry year: egen double industry_debt_mean = mean(debt_ratio)
+* 行业缺失的记录不参与比较
+replace industry_cash_mean = . if industry == ""
+replace industry_debt_mean = . if industry == ""
+* 检查新生成的变量
+describe industry industry_cash_mean industry_debt_mean
+* 查看行业均值分布
+summarize industry_cash_mean industry_debt_mean
+*判断公司当年是否满足四项双高条件
+* 先建立缺失值变量
+gen byte high_thisyear = .
+* 四项条件同时满足则为1，否则为0
+* 仅对四个比率都有有效值的观测判断
+replace high_thisyear = ///
+    (cash_ratio > 0.20 & debt_ratio > 0.20 & ///
+     cash_ratio > industry_cash_mean & ///
+     debt_ratio > industry_debt_mean) ///
+    if !missing(cash_ratio, debt_ratio, industry_cash_mean, industry_debt_mean)
+* 查看当年双高分布
+tabulate high_thisyear, missing
+
+*判断连续两年双高
+*按公司和年份排序
+sort stock year
+*提取上一自然年的双高状态
+bysort stock (year): gen byte prior_high = high_thisyear[_n-1] if year == year[_n-1] + 1
+*生成最终的连续两年双高指标
+gen byte DH = .
+*两年均满足时，DH=1
+replace DH = 1 if high_thisyear == 1 & prior_high == 1
+*任意一年明确不满足时，DH=0
+replace DH = 0 if high_thisyear == 0 | prior_high == 0
+*检查结果
+tabulate DH, missing
+tabulate year DH if inrange(year, 2007, 2018), 
+
+*确认公司—年份仍然唯一
+isid stock year
+* 查看DH的整体分布
+tab DH, missing
+*检查研究期内双高企业年度观测数量
+count if DH == 1 & inrange(year, 2007, 2018)
+*添加变量标签
+label variable cash_ratio "货币资金占总资产比例"
+label variable debt_ratio "短期借款占总资产比例"
+label variable high_thisyear "单年双高状态"
+label variable DH "连续两年存贷双高"
+* 保存初步构造结果
+save "存贷双高_初步构造.dta", replace
+* 查看单年双高指标分布
+tabulate high_thisyear, missing
+* 查看2007—2018年逐年的DH分布
+tabulate year DH if inrange(year, 2007, 2018), missing
+*以下是对变量异常值的检查
+
+* ==============================================
+* 8.6 检查DH缺失值的来源
+* ==============================================
+
+* 1. 查看各年单年双高指标缺失情况
+tab year if missing(high_thisyear) & inrange(year, 2015, 2018)
+
+* 2. 查看各年现金比率缺失情况
+tab year if missing(cash_ratio) & inrange(year, 2015, 2018)
+
+* 3. 查看各年借款比率缺失情况
+tab year if missing(debt_ratio) & inrange(year, 2015, 2018)
+
+* 4. 查看各年行业均值缺失情况
+tab year if (missing(industry_cash_mean) | missing(industry_debt_mean)) & inrange(year, 2015, 2018)
+
+* 5. 检查2017—2018年的连续两年判断
+tab high_thisyear prior_high if inrange(year, 2017, 2018), missing
