@@ -1,0 +1,4 @@
+
+# macOS and Stata temporary files
+.DS_Store
+*.stswp
